@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Spiritual</title>
+<style>
+:root {
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+
+  /* ✨ Updated Color Palette */
+  --bg1: #0b0a1f;
+  --bg2: #231942;
+  --accent1: #7b2ff7;
+  --accent2: #22e1ff;
+  --highlight: #ffd700;
+  --panel: rgba(20, 20, 40, 0.7);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: "Poppins", sans-serif;
+  background: radial-gradient(circle at 20% 20%, var(--bg2), var(--bg1));
+  background-size: 400% 400%;
+  animation: gradientShift 12s linear infinite;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  position: relative;
+  height: 100vh;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ✨ Floating Bubbles */
+.bubbles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
+.bubble {
+  position: absolute;
+  bottom: -100px;
+  background: radial-gradient(circle, var(--accent2), transparent 70%);
+  border-radius: 50%;
+  animation: rise 10s infinite ease-in;
+  opacity: 0.5;
+}
+@keyframes rise {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-120vh) scale(1.5); opacity: 0; }
+}
+
+/* ✨ Layout */
+.container {
+  position: relative;
+  width: 96%;
+  max-width: 1800px;
+  display: grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap: 24px;
+  align-items: start;
+  z-index: 10;
+}
+
+/* ✨ Left Nav */
+.left-nav {
+  height: 90vh;
+  background: linear-gradient(160deg, rgba(40,30,80,0.9), rgba(20,10,40,0.85));
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+}
+.left-nav h2 {
+  color: var(--highlight);
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+.song-list {
+  list-style: none;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.song-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  background: linear-gradient(160deg, rgba(50,40,100,0.8), rgba(25,20,60,0.9));
+  color: var(--accent2);
+  font-weight: 600;
+  text-align: center;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.song-item:hover {
+  background: linear-gradient(135deg, var(--accent2), var(--accent1));
+  box-shadow: 0 0 10px var(--accent2);
+  transform: translateY(-2px);
+}
+.song-item.active {
+  background: linear-gradient(135deg, var(--highlight), var(--accent2));
+  color: #000;
+  box-shadow: 0 0 15px rgba(255,255,255,0.3);
+}
+
+/* ✨ Buttons */
+.bottom-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+.bottom-buttons button {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.3s ease, box-shadow 0.3s;
+}
+.bottom-buttons button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 0 8px rgba(255,255,255,0.3);
+}
+.back-btn { background: linear-gradient(135deg, #7b2ff7, #22e1ff); }
+.playlist-btn { background: linear-gradient(135deg, #ffafbd, #ffc3a0); }
+
+/* ✨ Player */
+.center-player {
+  height: 90vh;
+  background: rgba(10, 10, 25, 0.6);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.iframe-wrap {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+iframe { width: 100%; height: 100%; border: 0; }
+
+/* ✨ Lyrics */
+.lyrics-panel {
+  height: 90vh;
+  background: rgba(10, 10, 25, 0.6);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+.lyrics-panel h3 {
+  color: var(--highlight);
+  text-align: center;
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(255,215,0,0.5);
+}
+.lyrics-block {
+  display: none;
+  white-space: pre-line;
+  color: #e6e6ff;
+  line-height: 1.6;
+  font-size: 0.96rem;
+}
+.lyrics-block.active { display: block; }
+
+/* ✨ Heading */
+.heading {
+  position: fixed;
+  top: 20px;
+  right: 50%;
+  transform: translateX(50%);
+  z-index: 99;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--highlight);
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  letter-spacing: 1px;
+}
+
+/* ✨ Responsive */
+@media (max-width:980px){
+  .container { grid-template-columns: 1fr; gap: 12px; }
+  .left-nav, .lyrics-panel { display: none; }
+  .center-player { height: calc(100vh - 36px); border-radius: 0; }
+  .heading { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="bubbles" id="bubbles"></div>
+<h1 class="heading">💤 Refresh Mix — Booster</h1>
+
+<div class="container">
+  <aside class="left-nav">
+    <h2>🎵 Playlist (11)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="window.location.href='C:/Users/yarra/OneDrive/ドキュメント/html/music/exhaustion%20back.html'">⬅ Back</button>
+      <button class="playlist-btn" onclick="window.location.href='file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html'">🎶 Open Playlist</button>
+    </div>
+  </aside>
+
+  <main class="center-player">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <aside class="lyrics-panel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Floating bubbles
+const bubbles = document.getElementById("bubbles");
+for (let i = 0; i < 25; i++) {
+  const b = document.createElement("div");
+  b.className = "bubble";
+  const size = Math.random() * 20 + 10;
+  b.style.width = b.style.height = size + "px";
+  b.style.left = Math.random() * 100 + "%";
+  b.style.animationDuration = 8 + Math.random() * 8 + "s";
+  b.style.animationDelay = Math.random() * 5 + "s";
+  bubbles.appendChild(b);
+}
+
+// Songs list
+const songs = [
+  {
+    title: "🎶 Endhuko Pichi Pichiga",
+    preview: "https://drive.google.com/file/d/1QzjPFFsmE5_UVP_fb-jAaw-mgIA6ru2Q/preview",
+    lyrics: `Endhuko Pichi Pichiga Nachhaave
+Gundello Entha Gattigaa Guchhaave
+Matthulo Koddhi Koddhigaa Munchaave
+Inthalo Kalla Mundhuke Vachhaave
+No No Anukuntune Slowgaa Chedipoyaane
+Love Lo Padipoyaane Meri Pyari Mehabooba
+Nadiche Nelavanka Choosthe Neevanka Nidhare Raadhinka, Aa AaAa Aa
+No No Anukuntune Slowgaa Chedipoyaane
+Love Lo Padipoyaane Meri Pyari Mehabooba
+Laila Zara Dik De Laila… Laila Meri Dil Mein Koyla
+
+Intha Goppa Adrushtam Ventapadi Vasthundhaa
+Andhuke Ilaa Ilaa Gaallo Theliponaa
+Pakkane Nuvvunte Pattaleni Anandam
+Nannilaa Chuttesthunte Choosthu Koorchovaalaa
+Pulilaa Unnodni Pillilaa Ayipoyaa
+Nannilaa Maarchesindhi Pilla Nuvvene, Ho
+Kalale Kantunnaa Kalallo Untunnaa
+Edhurai Vachhaavante Nammedhelaage
+
+Neekai Padichachaane Neeke Manasichhaane
+Ninne Preminchaane Choodakunda Undalene
+Laila Zara Dik De Laila… Laila Meri Dil Mein Koyla
+
+Andhanantha Dhooramlo Ninnalaa Choosthunte
+Appude Baagundedhe Attaa Ippudu Ledhe
+Uu Ante Kopaalu Kaadhante Shaapaalu
+Olammo Neetho Sneham Ikkadithone Chaalu
+
+Boori Bugga Ammaayi Endhukintha Badaayi
+Thokkalo Buildup Isthe Vegedhelaage, Ho
+Enthagaa Oohinchaa… Enthagaa Preminchaa
+Nuvvilaa Chesthu Unte Raadhaa Chiraake
+
+Neekai Padichachaane Neeke Manasichhaane
+Ninne Preminchaane Choodakunda Undalene
+Laila Zara Dik De Laila… Laila Meri Dil Mein Koyla
+Laila Zara Dik De Laila… Laila Meri Dil Mein Koyla
+
+
+`
+  },
+  {
+    title: "🎶 Oh Priyaa Na Priyaa",
+    preview: "https://drive.google.com/file/d/14Ut4wc3rC0uasAwoklBeJ1_GYorEJbP9/preview",
+    lyrics: `Oh Priyaa Naa Priyaa
+Oh Priyaa Naa Priyaa
+
+Mehbooba Mehbooba
+
+Oh Priyaa Naa Priyaa
+Oh Priyaa Naa Priyaa
+
+Mehbooba Mehbooba
+
+Premalo Paddamane Lopalaa
+Kallaki Kanneerento Kaapala
+
+Nuvvu Dagagarunte Ye Yuddhamaina
+Nishabdham Innaallugaa
+Nuvvu Dhooramaithe Nishabdhamaina
+Prathi Roju Yuddham Kadhaa
+
+Mehbooba Mehbooba
+
+Oh Priyaa Naa Priyaa
+Oh Priyaa Naa Priyaa
+
+Levule Ye Gaalike Aankshale
+Nigike Lene Levu Yellale
+
+Mana Matti Meedha Pagabatti
+Yevaru Geesaru Sarihaddhulu
+Premante Yento Thelisunte
+Vaallu Ee Geetha Geesundaru
+
+Mehbooba Mehbooba
+
+Oh Priyaa Naa Priyaa
+Oh Priyaa Naa Priyaa
+
+Mehbooba Mehbooba`
+  },
+ {
+    title: "🎶 Oh Priya Priya",
+    preview: "https://drive.google.com/file/d/1abhTs6-1Logq1t-cXzVUISh_CnTIty5p/preview",
+    lyrics: `You Are My Honey
+You Are My Jonny
+
+Oh Priya Priya Oh My Dear Priya
+Nee Premalo Manase Munigindhi Vela
+Telusa Neekainaa Ontari Oohallo
+Unnaa Oopirilo Nuvvele Priyaa
+
+I Love You Ani Palikinadhe
+Ninu Thaakina Gaajainaa
+Aligina Naa Cheli Navvullo
+Nee Premani Choosthunna
+
+You Are My Everything
+You Are My Everything
+You Are My Everything
+You Are My Everything
+Everything Everything
+Everything Everything
+
+Oh Priya Priya Oh My Dear Priya
+Nee Premalo Manase Munigindhi Vela
+
+O Naanna Nannanna
+O Naanna Nannannaన
+O Naanna Nannannaa..Oho O..
+
+Praayam Ninnedho
+Saayam Adigindhaa
+Dhoboochulaate
+Vayasu Aadindhaa Oh O
+Thullintha Pere Prema Anukunte
+Naa Pedavi Ninne Dhaachukuntundhi
+
+Vidigaa Ninnodhalanu
+Neekem Kaanivvanoo
+Kadhile Nee Kalaku Praanam Nenu
+Emantaavo Emantaavo
+
+I Love You Ani Palikinadhe
+Ninu Thaakina Gaajainaa
+Aligina Naa Cheli Navvullo
+Nee Premani Choosthunna
+
+You Are My Everything
+You Are My Everything
+You Are My Everything
+You Are My Everything
+Everything Everything
+
+You Are My Honey
+You Are My Jonny
+O O Ohoo O O Ohoo
+O O Ohoo O Oh O Oh
+
+Aakasham Nenai Anthataa Unnaa
+Thaaralle Naapai Merisi Polevaa
+Nee Allarilone Thelipothunte
+Nee Chelime Chanuvai Cherukolevaa
+
+Unnaa Neekandhanoo
+Naalaa Premincharu
+Neeku Nenunnaa Raa Bangaaru
+Emauthaano Nee Maayallo
+
+I Love You Ani Palikinadhe
+Ninu Thaakina Gaajainaa
+Aligina Naa Cheli Navvullo
+Nee Premani Choosthunna
+
+You Are My Everything
+You Are My Everything
+You Are My Everything
+You Are My Everything
+Everything Everything
+Everything Everything
+Oh Priya Priya Priya Priyaa`
+  },
+ {
+    title: "🎶 My World Is Flying",
+    preview: "https://drive.google.com/file/d/1Fmusf0LhcPauy-sBn04GwYFYwQ12TpoV/preview",
+    lyrics: `Hmmm
+Dhooram Dhooram Dhooram Dhooram
+Dhoorangunde Aakasham
+Dhaggarakochhi Gaaram Chesindhaa..!
+Bhaaram Bhaaram Bhaaram Bhaaram
+Anukokundaa Naa Kosam
+Naathopaatu Bhoomini Laagindhaa..?
+
+Inthaku Mundhara Naalo Ledhee
+Gaallo Thele Alavaatu
+Emayyindho Choose Lope
+Jarigindhedho Porapaatu
+Ee Thiyyani Allari Neevallenantoo
+
+My World Is Flying
+Flying Flying… Flying
+Dhaaram Thenchukunna Kite Laagaa
+Just Flying Flying Flying Flying
+Theeram Enchukunna Flight Laagaa
+
+Niddura Podaamante
+Naa Reppalu Egire Feeling
+Naa Kannulu Marichesaayaa Sleeping
+Baitaku Veldhaamante
+Naa Adugulu Egire Feeling
+Paadhaalu Marichesaayaa Walking
+
+Neetho Chubuthaamante
+Naa Maatalu Egire Feeling
+Naa Pedhavulu Maricheshaayaa, Talking
+Unna Chota Undalenu
+Kudhurugaa Koorchonulenu
+Bavundhe Love Lona Falling
+
+My World Is Flying
+Flying Flying Flying
+Dhaaram Thenchukunna Kite Laaga
+Just Flying Flying Flying Flying
+Theeram Enchukunna Flight Laaga
+
+Nimisham Kanapadakunte
+Nee Maaate Vinabadakunte
+Naa Gundeku Chappudu Leni Feeling
+Nuvve Kasarakapothe
+Nanu Thiyyagaa Thittakapothe
+Naa Manasuku Oopirileni Feeling
+
+Ishtamaina Chota Unna
+Kashtam Gaane Undhe
+Ninneppudu Chusthaanantoo Waiting
+Ninnu Intha Miss Avuthunte
+Rekkalinkaa Plus Avuthoo
+Neevaipe Laaguthunna Feeling
+
+My World Is Flying
+Flying Flying… Flying
+Dhaaram Thenchukunna Kite Laaga
+Just Flying Flying Flying Flying
+Theeram Enchukunna Flight Laaga
+`
+  },
+ {
+    title: "🎶 Pilla O Pilla",
+    preview: "https://drive.google.com/file/d/1g4w_bWXyOAhzz94jjOpj3iVvnz_O-qLk/preview",
+    lyrics: `Adhirenu Adhirenu Edhasadi Adhirenu
+Kaligenu Kaligenu Alajadi Kaligenu
+GiraGira Thirigedi Bhoomi Nilichenu
+Galagala Kadhiledi Gaali Nilichenu
+Manasulo Tholakari Mokka Molichenu
+Vayasuna Magasiri Poddhu Podichenu
+Naranara Naramulu Salasala Marigenu
+Ninna Leni Nippulaanti Thoofanu
+
+
+Gundellona Veyi Vella Pidugulu Pagilenu
+Koti Koti Merupula Katthi Dhaadi Jarigenu
+Naapai Naapai Naapai… Naapai Naapai
+Kaali Kindha Nela Kooda Nanu Veedi Kadhilenu
+Praanamantha Pinduthunna Theepibadha Ragilenu
+Emayyindho Emayyindho Reppa Moosi Theeselogaa
+Emayyindho Chooselogaa Naalo Nenu Lene Lenu
+
+Pilla O Pilla… Naa Choopullona Merishaane
+Pilla O Pilla… Naa Oopirilona Kalishaave
+Pilla O Pilla… Naa Devatha Nuvvai Nilichaave
+Ayyo, Oo Oo Oho Oo Oo Hoo
+
+Paadarasamune Pothaposi Nee Merupu Dehame Malichaaro
+Poola Parimalam Oopiroodhina Paiki Ninnilaa Odhilaaro
+Adbhuthaalannee Oka Chote Vethiki Ninu Cherinaayemo
+Polikalu Solipoye Roopam Needhe
+Pilla O Pilla… Naa Gunde Thalupu Thattaave
+Pilla O Pilla… Naa Prema Dhaari Pattaave
+Pilla O Pilla… Naa Kallo Deepam Pettaave
+Ayyo, Oo Oo Oho Oo Oo Hoo
+
+
+Horugaalilo Nemali Kannulaa… Theluthondhi Madhi Nee Valle
+Joruvaanalo Aaduthunna Nee Antharngamoka Hariville
+Padidi Paruvaala Pasipaapa Maruvadhe Ninnu Kanupaapa
+Janmake Gnamakamgaa Chooshaa Ninne
+
+Pilla O Pilla… Naa Lokamlo Adugettaave
+Pilla O Pilla… Nee Andamam Padagottaave
+Pilla O Pilla… Naa Kosame Nuvvu Puttaave, Ayyo, Oo Oo Ho
+Pilla O Pilla… Nee Andham Debba Thinnaane
+Pilla O Pilla… Ne Therukunnaane
+Pilla O Pilla… Nee Premalo Paduthunnaane
+Ayyo, Oo Oo Oho Oo Oo Hoo`
+  },
+ {
+    title: "🎶 Undipova Nuvvila",
+    preview: "https://drive.google.com/file/d/12ZdEf5Di2u5nyp3Qv65s_Ow81kosAb1F/preview",
+    lyrics: `Naalona Nuvve Cheripoyaavaa
+Nee Chelimine Naalo Nimpaavaa
+O I Fall In Love… Nee Maayallone
+O I Fall In Love… Thelisindhaa
+
+Undipova Nuvvila
+Rendu Kalla Lopala
+Gunde Chaatulo Ilaa
+Theepi Uppena Kalaa
+
+Nuvve Naaku Sonthamaina
+Ekaanatha Mantramai
+Nuvve Choodananthagaa
+Preminchaanu Ninnugaa
+
+Naalona Nuvve Cheripoyaava
+Nee Chelimine Naalo Nimpaava
+
+O I Fall In Love
+Nee Maayallone
+O I Fall In Love
+Thelisindhaa
+
+Ninne Ninne Choosthu Nenu
+Enno Anukuntaanu
+Kannu Kannu Kalise Vela
+Moogai Pothaanu
+Madhuramugaa Prathi Kshaname
+Jaraganidhe Nenu Maruvadame
+
+O, I Am Feeling High
+Nee Premallone
+O, I Am Flying Now
+Nee Valane
+
+Undipova Nuvvilaa
+Rendu Kalla Lopala
+Gunde Chaatulo Ilaa
+Theepi Uppena Kalaa
+
+Nuvve Naaku Sonthamaina
+Ekaanatha Mantramai
+Nuvve Choodananthagaa
+Preminchaanu Ninnugaa
+
+Naalona Nuvve Cheripoyaavaa
+Nee Chelimine Naalo Nimpaavaa
+
+Entha Aalochisthoo Unna
+Emi Ardham Kaadu
+Antha Neeve Ayipoyaaka
+Naake Ne Lenu
+Chilipithanam… Thariminadhe
+Jatha Kalise Chiru Tharunamidhe
+
+O, I Wanna Say… Naa Paatallone
+O, I Wanna Stay… Neethone
+
+Undipova Nuvvilaa
+Rendu Kalla Lopala
+Gunde Chaatulo Ilaa
+Theepi Uppena Kalaa
+
+Nuvve Naaku Sonthamaina
+Ekaanatha Mantramai
+Nuvve Choodananthagaa
+Preminchaanu Ninnugaa
+
+Naalona Nuvve Cheripoyaavaa`
+  },
+ {
+    title: "🎶 Chirugaali chanuvugaa ",
+    preview: "https://drive.google.com/file/d/1Rrx_69CdZNUxKdf8I63I9XFPXyNx64tB/preview",
+    lyrics: `Chirugaali chanuvugaa chitikeyyaa
+Adi manasuku tagile hoyyaa
+Chirugaali chanuvugaa chitikeyyaa
+Adi manasuku tagile hoyyaa
+
+Chirugaali chanuvugaa chitikeyyaa
+Adi manasuku tagile hoyyaa
+Hoyyaa hoyyaa
+
+Chinukemo chitapataa daruveyya
+Purivippina nemale ayyaa
+Ayyaa hoyyaa
+
+Gundetalupe muyyaalante 
+Kudaranipanile saiyyaan saiyyaan
+Saiyyaan saiyyaan
+
+Chirugaali chanuvugaa chitikeyyaa
+Adi manasuku tagile hoyyaa
+Hoyyaa hoyyaa
+
+Moyalenee haayi idento
+Arere deeni kathento
+Ee mattiki naakoo bandhamento
+Paadam aagadadento
+
+Gundetalupe muyyaalante 
+Kudaranipanile saiyyaan saiyyaan
+Saiyyaan saiyyaan
+
+Chirugaali chanuvugaa chitikeyyaa
+Adi manasuku tagile hoyyaa
+Hoyyaa hoyyaa
+
+Kanulakemo kotta kaledo
+Kalige soochanidemo
+Oohake raanee kotta lokam
+Chere daari idemo
+
+Gundetalupe muyyaalante 
+Kudaranipanile saiyyaan saiyyaan
+Saiyyaan saiyyaan
+
+Chirugaali chanuvugaa chitikeyyaa
+Adi manasuku tagile hoyyaa
+Hoyyaa hoyyaa
+
+Chinukemo chitapataa daruveyya
+Purivippina nemale ayyaa
+Ayyaa ayyaa
+
+Gundetalupe muyyaalante 
+Kudaranipanile saiyyaan saiyyaan
+Saiyyaan saiyyaan
+
+Chirugaali chanuvugaa chitikeyyaa
+Adi manasuku tagile hoyyaa
+
+
+`
+  },
+ {
+    title: "🎶 Raa Chilaka",
+    preview: "https://drive.google.com/file/d/1Jw8V6298k-mWbySW-rvnzRr1t1LJz9QK/preview",
+    lyrics: `Raa chilaka raananaka…..Nee varase maakeruka
+Ye mukku thadu vesi ninnethukellada
+Hey raalugayi laanti ee rakumarudu
+O ennadaina neeku chendada
+Evvaremi anna ninnu cherada
+Raa chilaka raananaka….Nee varase maakeruka
+
+Yemisthunna chiragga kadantunte elaga
+Ee saradale nijamga untayi theepi gnapakaluga
+Jeevithanthamu neeku thodugaa
+Raa chilaka raananaka…..Nee varase maakeruka
+
+O mullu puvvu mudesthe thadasthu anada prema devathe
+Siddamavvaga antho intho avasthe
+Paalu neerai kalisthe…..Neeku sreemathe
+Raa chilaka raananaka….Nee varase maakeruka
+
+Ye mukku thadu vesi ninnethukellada
+Hey raalugayi laanti ee rakumarudu
+O ennadaina neeku chendada
+Evvaremi anna ninnu cherada
+Raa chilaka raananaka…..Nee varase maakeruka`
+  },
+ {
+    title: "🎶 Enduku Emo",
+    preview: "https://drive.google.com/file/d/1px7UVcwaDK8HIVaToTKG4EjjyFbYfp2S/preview",
+    lyrics: `Enduko emo thulli thirigenu manase
+Pichi parugulu thise velli verisenu vayase
+Enduko emo gunde dharuvulu vese
+Konte thalapulu thoche pongi poralanu aase
+
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+Repo dhari kanani dari kanani theeram
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+Roju thadapaduthu velige e udhayam
+
+Enduko emo kanta merupulu merise
+Cheri dhuramaiye varase reye kalaluga virise
+Enduko emo rekkaledalaku moliche
+Chinni gundenedo tholiche ontariga nanu vidiche
+
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+Repo dhari kanani dari kanani theeram
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+Roju thadapaduthu velige e udhayam
+
+Nuvvu nenu oka yantrama
+Kaalam nadiche o mahima prema
+
+Muddulidina oopiri segalu
+Thagili ragili chedipothunna
+Chentha nuvvu nilabadagane
+Nannu vidichi parugeduthunna
+
+Samipaanakochavante gundello thuffane
+Allaa nannu rammannava alladipothaane
+Navvullo champe maaye challe
+
+Enduko emo thulli thirigenu manase
+Pichi parugulu thise velli verisenu vayase
+Enduko emo gunde dharuvulu vese
+Konte thalapulu thoche pongi poralanu aase
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+
+Nuvvu nenu oka yantrama
+Kaalam nadiche o mahima prema
+Let’s Go Wow Wow
+Migarlli thelugammaye enduko emo
+Your looking so fly
+Maruvanannadi naa madi mari mari
+Nee manase lovely cheppakane cheppa
+Premaku eddari chupule vanthena
+Lady looking like sindrella sindrella
+Naati lookkuliche eevela
+Lady lookking like sindrella sindrella
+Nannu chuttumutte vennela
+
+Lady looking like sindrella sindrella
+Naati lookkuliche eevela
+Lady looking like sindrella sindrella
+Naati lookkuliche eevela
+
+Nilapaneeka nanu thega vethike
+Kanulakinni thapanalu ento
+Enni sudulu vinapaduthunna
+Veedipodu nee palukento
+
+Kalallona ninne kanagaa kannulane pondaano
+Kale kallalaye vela kanniraipothano
+Needane dhoche paape neeno
+
+Emo allright thulli thirigenu manase
+Pichhi parugulu theese velli virisenu vayase
+Ooo emo gunde dharuvulu vese
+Konte thalapulu thoche pongi poralanu aashe
+
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+Repo dhari kanani dari kanani theeram
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+Roju thadapaduthu velige e udhayam
+
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+Repo dhari kanani dari kanani theeram
+Edo Gaji bijiga Gaji bijiga kanipinche rupam
+Roju thadapaduthu velige e udhayam`
+  },
+ {
+    title: "🎶 Ededo Palike…",
+    preview: "https://drive.google.com/file/d/1scwoHb1JM_zvxyJkrdenyIwLEJOusTHX/preview",
+    lyrics: `Ededo Palike… Naa Pedhavula Maunam
+Nee Pere Nee Pere Pilichenule…
+Nee Picchitone… Allaade Praanam
+Ninnelae Ninnelae Talachenule
+
+Edi… Nee Chilipi Chirunavve Kuripinchu
+Edi… Nee Chope Edhalo Dinchu
+Edi… Nee Oosula Ooyalalo Telinchu
+Edi… Nee Oohanu Naakandinchu
+
+Edi… Naapai Ishtam Choopinchu
+Edi… Ippudu Dooram Tenchu
+Edi… Inka Maimarupae Penchu
+Edi… Jataga Cheyyandinchu
+
+O… Chaluva Chelimi Choopule
+Kalava Kanulu Dochele…
+Prema Poola Jallule
+Kurisi Manasu Tadisele…
+
+Merise Rangula Villule
+Odilo Kochchi Vaalele
+Shilale Virulai Maarele
+Parimalamedo Panchele
+
+Edi… Nee Chilipi Chirunavve Kuripinchu
+Edi… Nee Chope Edhalo Dinchu
+Edi… Nee Oosula Ooyalalo Telinchu
+Edi… Nee Oohanu Naakandinchu
+
+Edi… Naapai Ishtam Choopinchu
+Edi… Ippudu Dooram Tenchu
+Edi… Inka Maimarupae Penchu
+Edi… Jataga Cheyyandinchu
+
+Ededo Palike… Naa Pedhavula Maunam
+Nee Pere Nee Pere Pilichenule…
+Nee Picchitone… Allaade Praanam
+Ninnelae Ninnelae Talachenule
+
+Edi Edi… Edi Edi
+Edi Edi… Edi Edi`
+  },
+ {
+    title: "🎶 Pilichina Ranantava",
+    preview: "https://drive.google.com/file/d/1iiQLVs2kExuk-g41WU5BWRRnTEDxS7RT/preview",
+    lyrics: `Pilichinaa Raanantavaa
+Kalusuko Lenantavaa
+Naluguru Vunnarantavaa O O
+Chilipigaa Chenthaku Raalevaa
+
+Thelivigaa Chere Thovaa
+Theliyane Ledaa Baava
+Atu Itu Chusthu Vuntavaa O O
+Thatapataa Isthu Vuntavaa
+
+Samayam Kaadhantavaa
+Saradaa Ledhantavaa
+Sarasam Chedhantavaa Baavaa
+
+Chanuve Thagadhantavaa
+Manave Vinanantavaa
+Varasai Itu Rammante
+Naamaata Manninchavaa
+
+Dolu Bhajaala Ila Na Venta Padathava
+Chelaaki Roja Agamante Aaganantaava
+Dolu Bhajaala Ila Na Venta Padathava
+Chelaaki Roja Agamante Aaganantaava
+
+Kanulunte Sogase Kanapadadha
+Manasunte Thagumargam Dorakadha
+Raananaka
+
+Anukunte Saripodhe Vanitha
+Atupai Ye Porabaato Jaragadha
+Rammanaka
+
+Perigina Daaham Tharagadhe
+Pedavulu Thakandhe
+Tharimina Thapam Thaaladhe
+Madanudi Banam Thagilithe
+
+Challe Badaayi Natho Ladaayi
+Thagginchavoyi Abbayi
+
+Hava Havayi Ammo Ammayi Vinaanule
+
+Hava Havayi Ammo Ammayi
+Vinnam Kadha Nee Sannayi
+Hava Havayi Ammo Ammayi
+Vinnam Kadha Nee Sannayi
+
+Pilichinaa Raanantavaa
+Kalusuko Lenantavaa
+Naluguru Vunnarantavaa O O
+Chilipigaa Chenthaku Raalevaa
+
+Mohamatam Padataava Athiga
+Sukumaram Chitikesthe Choravagaa
+Cheravugaa
+
+Irakaatam Pedathave Idhiga Abala
+Nee Gubulente Kudurugaa Aagavuga
+Aagavugaa
+
+Darishanamisthe Suluvugaa
+Aalusuga Chusthava
+
+Sarasaku Vasthe Dhurusugaa
+Mathi Chedipodha Maradala
+
+Varala Balaa Varinchuvela
+Tharinchanantu Thaguvela
+
+Nigaramitta Jigelanala
+Janam Chedela 
+
+Nigaramitta Jigelanala
+Janam Chedela Javarala
+Nigaramitta Jigelanala
+Janam Chedela Javarala
+
+Thannana Nane Thannana Nane
+Thannana Nane Thananana
+Thannana Nane Thannana Nane
+Thannana Nane Thananana
+Thannana Nane Thannana Nane
+Thannana Nane Thananana`}
+  ];
+
+
+// Fill playlist
+const list = document.getElementById("songList");
+const playerWrap = document.getElementById("playerWrap");
+const lyricsHolder = document.getElementById("lyricsHolder");
+const lyricsTitle = document.getElementById("lyricsTitle");
+
+songs.forEach((song, i) => {
+  const li = document.createElement("li");
+  li.className = "song-item";
+  li.textContent = song.title;
+  li.onclick = () => playSong(i);
+  list.appendChild(li);
+
+  const lyr = document.createElement("div");
+  lyr.className = "lyrics-block";
+  lyr.textContent = song.lyrics;
+  lyricsHolder.appendChild(lyr);
+});
+
+function playSong(i) {
+  document.querySelectorAll(".song-item").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".lyrics-block").forEach(el => el.classList.remove("active"));
+  list.children[i].classList.add("active");
+  lyricsHolder.children[i].classList.add("active");
+  lyricsTitle.textContent = songs[i].title + " Lyrics";
+  playerWrap.innerHTML = `<iframe src="${songs[i].preview}?autoplay=1" allow="autoplay"></iframe>`;
+}
+
+
+function goBack(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/happy%20back.html";
+}
+function openPlaylist(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html";
+}// Auto play first song
+playSong(0);
+</script>
+</body>
+</html>

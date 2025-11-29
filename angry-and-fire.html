@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root{
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(135deg, #ff512f, #00e6ff);
+  background-size:400% 400%;
+  animation:gradientShift 15s ease infinite;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.25);
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%;
+  max-width:1800px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#00e6ff;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.08);
+  color:#00e6ff;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.15);
+  box-shadow:0 0 8px rgba(255,255,255,0.15) inset;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#00e6ff,#00ffa3);
+  color:#000;
+  box-shadow:0 0 10px rgba(255,255,255,0.3) inset;
+}
+
+/* Buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, filter 0.3s ease;
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+.back-btn{
+  background:linear-gradient(135deg,#a1c4fd,#c2e9fb);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics panel */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:auto;
+}
+.lyrics-panel h3{
+  color:#00ffa3;
+  text-align:center;
+  margin-bottom:8px;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#fff;
+  line-height:1.6;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.5rem;
+  font-weight:700;
+  color:#00e6ff;
+  text-shadow:0 2px 10px rgba(0,0,0,0.7);
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">🎶Release the Fire 🔥</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🎵 Motivational Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Video Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Lyrics Sidebar -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Background bubbles
+const bubblesContainer=document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// SONG DATA (10 songs)
+const songs=[
+    {title:"🔥 Needa Padadhani",preview:"https://drive.google.com/file/d/1-VuLRW8IZvKLCB5dmheNg5N45d1Xa2Dc/preview",lyrics:`Needa padadhani mantananagalara
+
+Nuvvantu levantu
+
+Gaali kalalaku kantinadigedaraa
+
+Thappunte ledhantu
+
+Padina nelaa
+
+Padina nelaa
+
+Vadhaladela niluvu neela
+
+Kadhapalela
+
+Yedhurugaale chediripodha
+
+Kalchoddu ante kadhu swarnam
+
+Vododdhu ante ledhu yuddham
+
+Lekunte kashtam haayi vyardham
+
+Yevarikosam maardhardham
+
+Kalchoddu ante kadhu swarnam
+
+Vododdhu ante ledhu yuddham
+
+Lekunte kashtam haayi vyardham
+
+Yevarikosam maardhardham
+
+Otameragani aata kanagalava
+
+Undhante kaadhaate
+
+Dhaati sishuvuga baita padagalava
+
+Nuvvantu oddhante
+
+Adugu dhooram
+
+Vijayamunna vidichipona
+
+Kadhalaleka
+
+Vadhalaleka chedhiripona
+
+Kalchoddu ante kadhu swarnam
+
+Vododdhu ante ledhu yuddham
+
+Lekunte kashtam haayi vyardham
+
+Yevarikosam maardhardham
+
+Kalchoddu ante kadhu swarnam
+
+Vododdhu ante ledhu yuddham
+
+Lekunte kashtam haayi vyardham
+
+Yevarikosam maardhardham
+`},
+// 2
+  {title:"🔥 Pranaamam",preview:"https://drive.google.com/file/d/13bGvoVLk3BpkBbKSJ1BAuo6gQDkaGO5G/preview",lyrics:`Thom Dhirananana Dhira Dhira Naa
+Thom Dhirananana Dhira Dhira Naa
+Dhom Dhirana Dhom Dhirana
+Dheera Dheera Naa Naa
+Thom Dhirananana Dhira Dhira Naa
+Thom Dhirananana Dhira Dhira Naa
+
+Pranamam Pranamam Pranaamam
+Prabhatha Suryudiki Pranaamam
+Pranaamam Pranaamam Pranaamam
+Samastha Prakruthiki Pranaamam
+
+Pramodham Pramodham Pramodham
+Prathi Srushti Chitram Pramodham
+Prayaanam Prayaanam Prayaanam
+Vishvamtho Mamekam Prayaanam
+
+Thom Dhirananana Dhira Dhira Naa
+Thom Dhirananana Dhira Dhira Naa
+Dhom Dhirana Dhom Dhirana
+Dheera Dheera Naa Naa
+
+Mana Chirunavvule Poolu
+Nittoorpule Thadi Meghalu
+Hrudhayame Gaganam
+Rudhirame Sandram
+Aashe Pachhadhanam
+
+Maare Ruthuvula Varnam
+Mana Manasula Bhaavodhvegam
+Sariga Choosthe Prakruthi Mottham
+Manalo Prathibimbham
+
+Nuvventha Nenentha Ravvantha
+Enno Elladhi Srushti Charitha
+Anubhavame Dhaachindhi Kondantha
+Thana Adugullo Adugesi, Veladham Janmanthaa
+
+Pranaamam Pranaamam Pranaamam
+Prabhaatha Suryudiki Pranaamam
+Pranaamam Pranaamam Pranaamam
+Samastha Prakruthiki Pranaamam
+
+Evadiki Sonthamidhantha
+Idhi Evvadu Naatina Panta
+Evadiki Vaadu Naadhe Hakkani
+Cheyyesthe Ettaa
+
+Tharamula Naati Kadhanthaa
+Mana Thadhupari Migalaalanta
+Kadhapaka Cherapaka
+Padhikaalaalidhi Kaapaadaalantaa
+
+Preminche Peddhamme Ee Vishvam
+Ishtangaa Gundeku Hatthukundham
+Kannerrai Kanneerai O Konchem
+Thalladillindho Ee Thalli, Ye Okkadu Migalam
+
+Pranaamam Pranaamam Pranaamam
+Prabhaatha Suryudiki Pranaamam
+Pranaamam Pranaamam Pranaamam
+Samastha Prakruthiki Pranaamam
+
+Thom Dhirananana Dhira Dhira Naa
+Thom Dhirananana Dhira Dhira Naa
+Dhom Dhirana Dhom Dhirana
+Dheera Dheera Naa Naa`},
+// 3
+  {title:"🔥 Og Firestorm",preview:"https://drive.google.com/file/d/10nHe7LzJkszeF-2M1N5O1QxCFU14nAmK/preview",lyrics:`Class In The Fire
+There Will Come A Leader
+Ojas Gambheera
+
+Hold Your Breath And Fear
+Dragons Coming Near
+Ojas Gambheera
+
+Alalika Kadalaka Bhayapadele
+Kshanakshanamoka Thala Thegi Padele
+Pralayamu Eduruga Nilabadele
+Meti Dhatiki Lokam Hadalele
+
+Ranamuna Yamudiki Kanapadele
+Durusuga Nuvu Charachaku Thodale
+Padhunuga Thega Virigenu Medale
+Rakkasi Dharula Rudhira Poraley
+
+Fire It’s Coming
+Feel The Fire It’s Burning!
+Can You Take It Higher Higher?
+
+Storm Is Coming Heat It Up
+Yeah! Ojas Gambheera Hai!
+
+Hey Paga Ragilina Fire-U
+Kalabadite Gundelo Fearu
+Paga Ragilina Fire-U
+Modaledite Migalare Evaru
+
+Paga Ragilina Fire-U
+Kasi Pudithe Shatruvae Shiveru
+Paga Ragilina Fire-U
+Tanu Nippu Kalla Puli Pogaru
+
+Hey Pattukocche Vicchukatthi
+Mattubette Muttadinchi
+Puttenanta Prana Bheethi
+Bhayame Bhayapade!
+
+Netturodi Veta Kotha
+Kattubatu Leni Veta
+Pattubatti Kottenanta
+Marana Tharuname!!
+
+Hey Pattukocche Vicchukatthi
+Mattubette Muttadinchi
+Puttenanta Prana Bheethi
+Bhayame Bhayapade!
+
+Netturodi Veta Kotha
+Kattubatu Leni Veta
+Pattubatti Kottenanta
+Marana Tharuname!!
+
+Dare Ga Sono Hai? Kare Wa Miraida
+Kare Wa Tensai One Tacchi Haida
+Kare Wa Tomera Renai Makenai
+Yakuza No Shi Daare? Samurai
+
+Darega Sono Hai? Kare Wa Miraida
+Kare Wa Tensai One Tacchi Haida
+Kare Wa Tomera Renai Makenai
+Yakuza No Shi Dare? Samurai
+
+Rappa Baba Bappaaraa Rappa Baiya
+Rappa Baba Bappaaraa Rappa Baiya
+Rappa Baba Bappara Pappa Bayya
+Rappa Bappa Rappa Baba Baiyya!
+
+Rappa Baba Bappaaraa Rappa Baiya
+Rappa Baba Bappaaraa Rappa Baiya
+Rappa Baba Bappara Pappa Bayya
+Rappa Bappa Rappa Baba Baiyya!
+
+Fire Fire No Liar Liar
+Rise Like The Sun Over His Empire
+
+Fire Fire No Liar Liar
+Breathe Like A Dragon
+Only Spit The Hellfire
+
+If You Cross Him You Better Pray
+You Are Going Down In Flames
+
+Enemies Better Watch What They Say
+You Know His Name
+You Know His Name
+
+Hey Pattukocche Vicchukatthi
+Puttenanta Prana Bheethi
+
+Hey Pattukocchey Vicchukatthi
+Mattubette Muttadinchi
+Puttenanta Prana Bheeti
+Bhayame Bhayapade
+
+Netturodi Veta Kotha
+Kattubatu Leni Veta
+Og Og Og!!
+You Better Remember The Name!
+
+Paga Ragilina Fireu
+Paga Ragilina Fireu
+Rappa Baba Bappaaraa
+Rappa Baiyya
+
+Paga Ragilina Fire-U
+Kalabadite Gundelo Fear-U
+Paga Ragilina Fire-U
+Modaledite Migalare Evaru
+
+Paga Ragilina Fire-U
+Kasi Pudite Shatruve Shiveru
+Paga Ragilina Fire-U
+Tanu Nippu Kalla Puli Pogaru
+Ojas Gambheera`},
+// 4  
+{title:"🔥 Merupai Saagara",preview:"https://drive.google.com/file/d/1NBmlNLEBRrRNeIvTHso6eiMeu89EdPNg/preview",lyrics:`merupai sagara A gelupe nidira ni repati lakshyam maruvaku sodara
+nippulu chindina e pidugulu Apina venakaduge veyaka munduku sagara
+naludikkulu navvutu unna nalupekkani sUryudu nuvvai
+A chukkalane ila dinche ni Sakti ni yukti ga chupey
+natarajai nuvu rajey ni gelupe nilO
+merupai sagara A gelupe nidira ni repati lakshyam maruvaku sodara
+
+amma mata kosam nuvvu Ayudham ga mari kondale Dikottara adi enta kashtamaina
+Asayala pitham nuvu andukunna nadu ninduga murisenu ra mi amma ekkadunna
+cheyUte istunte O snehabandham charitalle marali nuvvellu margam
+ni pratibhe chupinche A roju kosam prati adugu kavali ni venuka sainyam
+lera adugey ra A Sikharam chera
+merupai sagara A gelupe nidira ni repati lakshyam maruvaku sodara
+
+kinda padutu unna paipaiki parugu tisi alalato poti padi cherali kalala kadali
+pandemedi aina ni pattudalanu chusi ontarai vanakalira A Otamaina hadali
+andariki chetullO untundi gita nikemo kollallo A brahma rata
+ni kalu adugulato kalanni Api lokale pogidela chupinchu ghanata
+lera chindey ra vijayam nidera
+merupai sagara A gelupe nidira ni repati lakshyam maruvaku sodara`},
+// 5  
+{title:"🔥 Dheera Dheera",preview:"https://drive.google.com/file/d/19gh1HTorGKf1maCIKchxUdyhfvbYsl_1/preview",lyrics:`Oh..Oho..Oho..Oho...
+Adhigo Penu Nisshbadham Pagili Mukkalauthunna Bheekara Drushyam
+Alalegisina Thadi Alajadi Aagraha Tejamai Roopudhaalchina Sathyam
+Aarthathraana Paraayana Dheeksha Parvam. Aho Aarambham
+
+Adhigo Penu Nisshbadham Pagili Mukkalauthunna Bheekara Drushyam
+Alalegisina Thadi Alajadi Aagraha Tejamai Roopudhaalchina Sathyam
+Aarthathraana Paraayana Dheeksha Parvam. Aho Aarambham
+Aarthathraana Paraayana Dheeksha Parvam. Aho Aarambham
+
+Dheeraa Dheera Dheera
+Dheera Oo Ranadheera
+Raara Raara Thera
+Theese Velugai Raara
+
+Dheeraa Dheera Dheera
+Dheera Oo Ranadheera
+Raara Raara Thera
+Theese Velugai Raara
+
+Dama Dama Dama Dama Hrudhaya Ninaadhame
+Dhadalu Puttinchu Marana Mrudhangam
+Dhimi Dhimi Dhimi Padha Ghattanaga Saage
+Pralayakaala Shiva Thaandava Nruthyam
+Chedu Kodukula Thala Thenchaka Maanadhu Leraa Ee Chaithanyam
+
+Dama Dama Dama Dama Hrudhaya Ninaadhame
+Dhadalu Puttinchu Marana Mrudhangam
+Dhimi Dhimi Dhimi Padha Ghattanaga Saage
+Pralayakaala Shiva Thaandava Nruthyam
+Chedu Kodukula Thala Thenchaka Maanadhu Leraa Ee Chaithanyam
+Chedu Kodukula Thala Thenchaka Maanadhu Leraa Ee Chaithanyam
+
+Amma Maatidhi Kanaa Nee Koraku
+Janmamannadhi Ontari Kada Varaku
+Edhalo Balame Nadipe Thodugaa..Aa
+Jagame Geliche Padhamai Saagaraa..Aa
+
+Dheeraa Dheera Dheera
+Dheera Oo Ranadheera
+Raara Raara Thera
+Theese Velugai Raara
+
+Dheeraa Dheera Dheera
+Dheera Oo Ranadheera
+Raara Raara Thera
+Theese Velugai Raara`},
+// 6  
+{title:"🔥 Aakasam Nee Haddhura",preview:"https://drive.google.com/file/d/1caZcr1Lii1E5zyp_6YJH8TqcwmawFhRh/preview",lyrics:`Thaaney thana naaney
+Nanay naanay thaana naanay (3)
+
+Nadi gundello nippundhi mandinchu dhanni
+Aa mantallo veliginchu nee repatini
+Sudigundalu edhuraina lekkinchaku dhenni
+Edhureedhali cheraali lakshyalani
+Odduna undi rallestharu nee pasa theliyani chettha janalu
+Rathnamla nuvu thelina naadu musukupova vaagin nollu
+
+
+Nadi gundello nippundhi mandinchu dhanni
+Aa mantallo veliginchu nee repatini
+Sudigundalu edhuraina lekkinchaku dhenni
+Edhureedhali cheraali lakshyalani
+Odduna undi rallestharu nee pasa theliyani chettha janalu
+Rathnamla nuvu thelina naadu musukupova vaagin nollu
+Odduna undi rallestharu nee pasa theliyani chettha janalu
+Rathnamla nuvu thelina naadu musukupova vaagin nollu
+Mukka chekkaluga virichey neekedhuru padina chikkulani
+Ukku rekkalatho egarey ninnu nammukunna nee kalani
+Thaaney thana naaney
+Thaana naanay Thaana naanayy
+Adhiga aakasam nee haddhura
+Thaaney thana naaney
+Thaana naanay Thaana naanay
+Dhaanandhe avakasam vadhaloddhuraa
+
+Itu raa ani chitikesavo gelupendhuku digi raavali
+Neeku mari migatha vallaki theda yetta teliyali
+Garvamgaa cheppukunendhuku neekoo o katha kaavali
+Chematodchi pondhina vijayam parimalami ninu cherali
+Kannu chinnagunnadhantu chinna kalalu kantama
+Leni poni pedharikam tho vaatiki giri geesthamaa
+Mattiloki vellipoyamo malli putti vasthaava
+Unnadhokka jeevithamey oorikey vadhilesthama
+Manasu petti pani chesthu orputhoana adugesey
+Needhaina marpuga naedae sarikottha charithanae raasey
+
+Thaanay thana naanay thanay naanay thanay naanay
+Thaanay thana naanay thanay naanay thanay naanay (2)
+Aakasam nee haddhura padha padha.
+
+`},
+// 7  
+{title:"🔥 Ragile Ragile",preview:"https://drive.google.com/file/d/157hcMufAWz7RuuvYqGfSSuWVSLvOA5Yu/preview",lyrics:`Mrutyuvu Jadisela Pada Pada
+ Shatruvu Bedhirela Pada Pada
+Garjana Telisela Pada Pada
+Debbaku Gelichela Pada Pada
+
+Padhi Thala Ravanuditho
+Poru Korake Kadiladu
+Ika Evadu Aapagaladu
+Dahanam Chesthadu
+
+Tegabadina Raakshasulatho
+Nedu Sahanam Marichadu
+Ika Evadu Aapagaladu
+Maranam Raastadu
+
+Chedunanthame Chesela
+Chelareginadi Ee Jvaala
+Cherabattina Mrityuvuthone
+Yuddham Ee Velaa
+
+Narame Kolimavvala
+Naramedhame Jaragala
+Narakaasura Raktam Thone
+Nele Tadavaala
+
+Ragile Ragile
+Modalayye Yuddhaale
+Kadile Kadile
+Padunekke Khadgaale
+
+Ragile Ragile
+Modalayye Yuddhaale
+Kadile Kadile
+Padunekke Khadgaale
+
+Yala Hela Hela Hela
+Yala Hela Hela He..
+
+Mrutyuvu Jadisela Pada Pada
+ Shathruvu Bedirela Pada Pada
+Garjana Telisela Pada Pada
+Debbaku Gelichela Pada Pada
+
+Mrutyuvu Jadisela Pada Pada
+Shathruvu Bedirela Pada Pada
+Garjana Telisela Pada Pada
+Debbaku Gelichela Pada Pada
+
+Avamaaname Ani Vaipula
+Penu Uppena Ninnu Koolchera
+Bhagaa Bhaga, Bhaga Bhaga
+Kalalanni Kaale Kadara
+
+Nadi Gundelo Katti Dinchaga
+Pratiti Ika Dooramayyega
+Bhaga Bhaga, Bhaga Bhaga
+Nuvvu Mandutune Padara
+
+Tadi Unde Kantilone
+Baadabagne Nimpara
+Taruvati Jaatikaina
+Sankelele Tencharaa
+
+Chedunantame Chesela
+Chelareginadi Ee Jvaala
+Cherabattina Mrityuvuthone
+Yuddham Ee Vela
+
+Narame Kolimavvala
+Naramedhame Jaragalaa
+Narakaasura Raktam Thone
+Nele Tadavaalaa
+
+Ragile Ragile
+Modalayye Yuddhaale
+Kadile Kadile
+Padunekke Khadgaale
+
+Ragile Ragile
+Modalayye Yuddhaale
+Kadile Kadile
+Padunekke Khadgaale
+
+Yala Hela Hela Hela
+Yala Hela Hela He…
+
+Mrutyuvu Jadisela Pada Pada
+Shatruvu Bedhirela Pada Pada
+Garjana Telisela Pada Pada
+Debbaku Gelichela Pada Pada
+
+`},
+// 8  
+{title:"🔥 Bhairavam Theme Song",preview:"https://drive.google.com/file/d/1LIUOUsfPQW9dRnrQ_ud1nNA7FznUuv3E/preview",lyrics:`Bham Bham Bham Shiva Broosthali Jananam
+Bau Bau Baukrutha Bheekara Ninadham
+Dhim Dhim Dhimpadha Bheeshana Chalanam
+Dham Dham Damrutha Dhamaruka Rananam
+
+Pralaya Praabhavaa… Shiva Tejodbhavaa
+Ari Garvaapaha… Ripu Samhaaraka
+Paapa Vinaashaka Saakshaath Sambashivaa
+
+Bhairavam Agniphaalam
+Bhairavam DheerghaRasanam
+Bhairavam KshaathraTejam
+Bhairavam Ranabeeshanam
+
+Gam Gam Garvitha Dhurjna Dhamanam
+Dham Dham Dharpitha Kanta Vidhalanam
+Tam Tam Aarbata Karaala Dhanshtram
+Dhig Dhig Dhig Bith Dheerga Nishvasanam
+Vichala Dhweekshanaa Rana Rakshekshanaa
+
+Shrithajana Rakshaka
+Balaripu Bhakshana
+Shitha Shitha Nakamukha
+Udhyath Mruthyumakhaa
+
+Bhairavam Vikrutha Vadhanam
+Bhairavam Shatru Nidhanam
+Bhairavam Bheema Roopam
+Bhairavam Bhaya Kaarakam`},
+// 9  
+{title:"🔥 Dheerodharanam",preview:"https://drive.google.com/file/d/1LNpsxdaBWSJw_gQvg7o-Eoagx1vHyMku/preview",lyrics:`Kshudra Kshetra Vibhraanta
+Asura Jhari
+Vishwagarbha Digbhandha
+Tritaya Dyuti
+Kaalagrasta Nisshabda Kadana
+Shikaraanta Samshayam
+Bhootha Pretha
+Dhurmaardha Naasha Kali
+Asthra Sasthra
+Vidhwamsa Yatna Arudi 
+Bhootha Nirdeasha Pramada
+Sankushta Bharamana 
+Pralayaanthakam
+
+Shoaka Tapta Shrim Loka
+ Trupti Vidhi Ghoara Yuktha 
+mithi Dheerayukti Sthithi
+Mrutyu Naasha Kruti
+Mrugana Gamya Druthi
+Sangha Sangha Samrakshakaa
+
+Dheeroddharanam
+    Gam 
+Veeroachitam
+Meadhotwalanam Ram
+Aaroahanam!!
+
+Bheekarachalanam
+	Ham 	
+Sangharshitam!!
+Bheeshana Parvam!!
+	Kham
+Shankhaaraavam!!
+
+
+Hara Haram Vrudhiganam
+Vuraharam
+Athulithachathuratha
+Ranagunam Raharanam
+Janibhalam Thuragajaragamulla
+
+Vijrumbha Prasthaana
+Saaranga Roudram
+Brahmaiba Sangraama
+Shouryam Shouryam
+Vinyasa Praaveenya Vispoata 
+Netram Dhagdaadhee Lankeaswaram
+
+Dheeroddharanam
+    Gam 
+Veeroachitam
+Meadhotwalanam Ram
+Aaroahanam!!
+
+Bheekarachalanam
+	Ham 	
+Sangharshitam!!
+Bheeshana Parvam!!
+	Kham
+Shankhaaraavam!!
+ `},
+//10  
+{title:"🔥 Aadi Jwala Ananta Jwala",preview:"https://drive.google.com/file/d/1agKicsOhrdclikZuKAmzGE6JMhxDuwVn/preview",lyrics:`Aadi Jwala Ananta Jwala
+Vaira Jwala Veera Jwala
+Daiva Jwala Daavagni Jwala
+Jeeva Jwala Praana Jwala
+
+Aadi Jwala Ananta Jwala
+Vaira Jwala Veera Jwala
+Daiva Jwala Daavagni Jwala
+Jeeva Jwala Praana Jwala
+
+Ee Matti Mutte
+Mundhe Ikada Puttindi
+Meme Meme
+
+Ankelu Puttakamundhe
+Lekkalu Kanipettindhi
+Meme Meme
+
+Kondekkaneekunda
+Ee Nippune Kaachamu
+Penu Muppe Mundhunna
+Bhayapadani Thegara
+
+Raa O Katti Patti Raa
+Rommetti Petti Raa
+Dandetti Kottara Raa Raa
+
+Raa O Katti Patti Raa
+Rommetti Petti Raa
+Dandetti Kottara Raa Raa Raa Raa
+
+Aadi Jwala Ananta Jwala
+Vaira Jwala Veera Jwala
+Daiva Jwala Daavagni Jwala
+Jeeva Jwala Praana Jwala
+
+Raa Raa Raa Raa..
+
+Sudigalalu Vadagalalu
+Visirenu Vilayam
+Pidugaagni Jadi Vaanalu
+Jallenu Pralayam
+
+Aakasham Paathalam
+Mingela Chusthunna
+Vanikinchi Nilabadinollam
+
+Badabaagnula Odilo
+Padi Perigina Vallam
+Jatharaagnula Jadilopala
+Naligina Vallam
+
+Panchagnula Koralato
+Mana Pancha Praanale
+Poradi Gelichina Vallam
+
+Egisipade Agnijalam
+Meeda Pade Konda Bilam
+Datagale Gundebalam
+Maniki O Varam
+
+Moratutnam Mondi Ghatam
+Yerugamata Ye Kapatam
+Nipputo Chelagatam
+Manaki Sambaram
+
+Aggiseekha Vaayuseekha
+Neetiseekha Raathiseekha
+Okkatiga Eduraina
+Beduru Yerugame
+
+Agnikanam Veeragunam
+Anuvaanuvu Batuku  Ranam
+Aayudhamai Anichesena
+Naatakakulame
+
+Raa O Katti Patti Raa
+Rommetti Petti Raa
+Dandetti Kottara Raa Raa
+
+Raa O Katti Patti Raa
+Rommetti Petti Raa
+Dandetti Kottara Raa Raa Raa Raa
+
+Aadi Jwala Ananta Jwala
+Vaira Jwala Veera Jwala
+Daiva Jwala Daavagni Jwala
+Jeeva Jwala Praana Jwala
+
+Raa Raa Raa Raa..
+
+
+
+Read Full Lyrics at iLyricsHub: https://www.ilyricshub.com/fire-kanguva-telugu/`}
+
+];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+const centerPlayer=document.getElementById('centerPlayer');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src=src+"?autoplay=1&mute=0";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[200,230,210,220,210,200,190,210,200,220];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur = songDurations[index] || 210;
+  window.endTimeout = setTimeout(nextSong, dur * 1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+centerPlayer.onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/angry%20back.html";
+}
+function openPlaylist(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

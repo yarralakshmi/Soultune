@@ -1,0 +1,88 @@
+title:"🎵kaatuka kallani chusthe",
+     preview:"https://drive.google.com/file/d/1ZRUvbfVSHYouJ9x2W2E1WUxtnEHPTp0G/preview",
+     lyrics:
+      `Kaatuka Kallanu Choosthe… Pothundhe Mathi Pothundhe
+Chaatuga Nadumunu Choosthe… Pothundhe Mathi Pothundhe
+Ghaatuga Pedhavulanu Choosthe… Pothundhe Mathi Pothundhe
+Raatuga Sogasulu Choosthe… Pothundhe Mathi Pothundhe
+Letuga Inthandhaanni… Chooshaane Anipisthundhe
+Naa Manase Neevaiposthundhe…
+
+Idhedho Baagundhe Cheli… Idhenaa Premante Mari
+Idhedho Baagundhe Cheli… Idhenaa Premante Mari
+Nee Mathi Pogoduthunte… Naakentho Saradhaagundhe
+Aashalu Repeduthunte… Naakentho Saradhaagundhe
+Ninnilaa Allaadisthe… Naakentho Saradhaagundhe
+Andhamgaa Norooristhe… Naakentho Saradhaagundhe
+Nee Kashtam Choosthu Andham… Ayyayyo Ankuntune
+Ilaage Inkaasepantunte…
+
+Idhedho Baagundhe Mari… Idhe Premanukunte Sare
+Idhedho Baagundhe Mari… Idhe Premanukunte Sare
+
+Thelusukuntaavaa Thelupamantaavaa…
+Manasu Anchullo… Ninchunna Naa Kalani
+Edhuru Choosthunna… Edhutane Unna
+Badhulu Dhorikettu… Palikinchu Nee Swaraanni
+Vela Gonthullona… Mogindhe Mounam
+Nuvvunna Chote Nenanee…
+Choosi Chudangaane… Cheppindhi Praanam
+Ne Nneedhaannai Poyaanani…
+
+Idhedho Baagundhe Cheli… Idhenaa Premante Mari
+Idhedho Baagundhe Mari… Idhe Premanaukunte Sari
+Tharachi Choosthoone Tharagadhantunna
+Thaluku Varnaala… Nee Menu Poolagani
+Naligipothoone Veligipothunna
+Thanivi Theerettu… Sandhinchu Choopulanni
+
+Kanti Reppalu Rendu… Pedhavullaa Maari
+Ninne Thinesthaamannaaye…
+Nedo Repo… Adhi Thappadhugaa Mari
+Neekosam Edhainaa Sare…
+dhedho Baagundhe Cheli… Idhenaa Premante Mari
+Idhedho Baagundhe Mari… Idhe Premanaukunte Sari`
+},
+{
+     title:"🎵chali chali ga alindhi",
+     preview:"https://drive.google.com/file/d/1CpxmwcWL6kDBh2KejxL4pvTj6lzJrzTV/preview?usp=drivesdk",
+     lyrics:
+    `O chali chaliga allindi gili giliga gillindi..
+Neevaipe mallindi manasu..
+Chita pata chindesthundi atu itu dookesthundi..
+Sathamathamai pothundi vayasu..
+Chinni chinni chinni chinni ashalu evevo..
+Gichi gichi gichi gichi
+Chitti chitti chitti chitti oosulu inkevo..
+Guchi guchi champesthunnayi..
+ 
+Nuvvu nathone unnattu na needavainattu..
+Nanne chusthunnattu oohalu..
+Nuvvu na oopirainattu nalopalunnattu..
+Edo chebuthunnattu evo kalalu..
+Chali Chaliga..
+ 
+Godavalatho modhalai thaguvulatho biguvai..
+Perigina parichayame needi nadi..
+Thalapulu veraina kalavani theeraina..
+Balapadi pothundhe unde koddi..
+Loyaloki padipothunnattu aakasham paiki veluthunnattu..
+Nuvvu nathone unnattu na needavainattu..
+Nanne chusthunnattu oohalu..
+Nuvvu na oopirainattu nalopalunnattu..
+Edo chebuthunnattu evo kalalu..
+
+Neepai kopanni endari mundhaina..
+Bedhure lekunda thelipe nenu..
+Neepai ishtanni neruga neekaina..
+Thelapalanukunte thadabaduthunnanu..
+Naku nene dhooram authunna..
+Nee allarulanni guruthosthune..
+Nannu nene cheralanukunna....
+Na chenthaki nee adugulu paduthu unte..
+ 
+Nuvvu nathone unnattu na needavainattu..
+Nanne chusthunnattu oohalu..
+Nuvvu na oopirainattu nalopalunnattu..
+Edo chebuthunnattu evo kalalu..`
+},

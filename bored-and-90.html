@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root{
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(135deg,#ff512f,#dd2476);
+  background-size:400% 400%;
+  animation:gradientShift 15s ease infinite;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.25);
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%;
+  max-width:1800px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#00e6ff;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.08);
+  color:#00e6ff;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.15);
+  box-shadow:0 0 8px rgba(255,255,255,0.15) inset;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#00e6ff,#00ffa3);
+  color:#000;
+  box-shadow:0 0 10px rgba(255,255,255,0.3) inset;
+}
+
+/* Buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, filter 0.3s ease;
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+.back-btn{
+  background:linear-gradient(135deg,#a1c4fd,#c2e9fb);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics panel */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:auto;
+}
+.lyrics-panel h3{
+  color:#00ffa3;
+  text-align:center;
+  margin-bottom:8px;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#fff;
+  line-height:1.6;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.5rem;
+  font-weight:700;
+  color:#00e6ff;
+  text-shadow:0 2px 10px rgba(0,0,0,0.7);
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">🎶 90's Telugu Songs 🎶</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🔥 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Video Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Lyrics Sidebar -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Animated bubbles
+const bubblesContainer = document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// SONG DATA
+const songs = [
+  { title: "🎵 Aaduvari maatalaku", preview: "https://drive.google.com/file/d/1gbfpl7PctrzVZC5GMMzIxcILrMaZ1rA9/preview", lyrics:`Aaduvaari maatalaku ardhaale verule
+aaduvaari maatalaku ardhaale
+verule ardhaale verule
+ardhaale verule ardhaale
+verule ardhaale verule
+
+
+Aaduvaari maatalaku ardhaale verule
+
+aaduvaari maatalaku ardhaale verule
+
+
+Aligi tolagi nilichinacho
+chelimi jeya rammanile
+aligi tolagi nilichinacho
+chelimi jeya rammanile
+chorava chesi rammanucho
+mariyaadaga pommanile
+chorava chesi rammanucho
+mariyaadaga pommanile
+
+
+Aaduvaari maatalaku ardhaale verule
+
+aaduvaari maatalaku ardhaale verule
+
+
+Visigi nasigi kasirinacho
+vishayamasalu ishtamule
+visigi nasigi kasirinacho
+vishayamasalu ishtamule
+tarachi tarachi oosadigina
+sarasaminka chaalanile
+tarachi tarachi oosadigina
+sarasaminka chaalanile
+
+Aaduvaari maatalaku ardhaale verule
+
+aaduvaari maatalaku ardhaale verule`},
+  { title: "🎵 Jabilli kosam", preview: "https://drive.google.com/file/d/1c578okXDEIXslsPB90VJGULx7ozJ7RRi/preview", lyrics:`jaabilli kosam aakaasamalle
+vechaanu nee raakakai
+jaabilli kosam aakaasamalle
+
+vechaanu nee raakakai
+
+
+jaabilli kosam aakaasamalle
+vechaanu nee raakakai
+jaabilli kosam aakaasamalle
+vechaanu nee raakakai
+ninu kaana lekaa manasoorukokaa
+paadaanu nenoo paatanai
+
+jaabilli kosam aakaasamalle
+vechaanu nee raakakai
+jaabilli kosam aakaasamalle
+vechaanu nee raakakai
+
+
+nuvvakkada nenikkada
+paatikkada palukakkada
+manasokkati kalisunnadi enaadainaa
+nuvvakkada nenikkada
+paatikkada palukakkada
+manasokkati kalisunnadi enaadainaa
+ee puvvulane nee navvulugaa
+ee chukkalane nee kannulugaa
+nunu niggula ee moggalu nee buggalugaa
+oohallo telee vurrootaloogee
+meghaalatotee raagaala lekhaa
+neekampinaanoo raavaa devee
+
+
+jaabilli kosam aakaasamalle
+vechaanu nee raakakai
+ninu kaana lekaa manasoorukokaa
+paadaanu nenoo paatanai
+jaabilli kosam aakaasamalle
+
+vechaanu nee raakakai
+
+
+nee peroka japamainadi nee
+premoka tapamainadi nee dhyaaname
+varamainadi yennalhlhainaa
+nee peroka japamainadi nee
+premoka tapamainadi nee dhyaaname
+varamainadi yennalhlhainaa
+vundee lekaa vunnadi neeve
+vunnaa koodaa lenidi nene
+naa repati adiyaasala roopam neeve
+dooraana vunnaa naa todu neeve
+nee deggarunnaa nee needa naade
+naadannadantaa neeve neeve
+
+
+jaabilli kosam aakaasamalle
+vechaanu nee raakakai
+ninu kaana lekaa manasoorukokaa
+paadaanu nenoo paatanai
+jaabilli kosam aakaasamalle
+vechaanunee raakakai
+vechaanu nee raakakai`},
+  { title: "🎵 Kammani ee Prema lekhane", preview: "https://drive.google.com/file/d/1h70dzsW39TXRFDeewHSQZMS0M4vBvu10/preview", lyrics:`Kammani Ee Premalekhane
+Raasindi Hrudayame
+Priyathamaa Neevachata Kushalamaa
+Nenichata Kushalame
+
+Oohalanni Patale
+Kanula Thotalo
+Tholi Kalala Kavithale
+Maata Maatalo
+
+Oh Kammani Ee Premalekhane
+Raasindi Hrudayame
+Priyathamaa Neevachata Kushalamaa
+Nenichata Kushalame
+
+Gundello Gayamedo
+Challanga Manipoye
+Maaya Chese
+Aa Maaye Premaaye
+
+Entha Gaayamaina Gaani
+Naa Menikemigaadu
+Puvvu Soki
+Nee Soku Kandhene
+
+Veliki Raani Verri Prema
+Kanneeti Dhaaralona
+Karuguthunnadi
+
+Naadu Shokamopaleka
+Nee Gunde Badha Padithe
+Thaalanannadi
+
+Manushulerugaleru
+Maamoolu Prema Kaadu
+Agni Kante Swachhamainadhi
+
+Mamakaarame
+Ee Laali Paataga
+Raasedi Hrudayamaa
+
+Umadevi Gaa
+Shivuni Ardha Bhagamai
+Naalona Niluvumaa
+
+Shubha Lali Lali Jo
+Lali Lali jo
+Umadevi Lali Jo
+Laali Lali jo
+
+Mamakaarame Ee Laali Paataga
+Raasedi Hrudayamaa
+Naa Hrudayamaa
+
+`},
+  { title: "🎵 Na Cheli Roojave", preview: "https://drive.google.com/file/d/1IcSWPrMd1DT8xm3v4Cr-jFjjMg80NRmN/preview", lyrics:`Naa Cheli Rojave Song Lyrics In English
+
+Naa Cheli Rojave… Naalo Unnaave
+Ninne Thalichene Nene… ||2||
+
+Kallallo Neeve… Kanneeta Neeve…
+Kanumoosthe Neeve… Edhalo Nindeve…
+Kanipinchavo Andhinchavo ThooooDu…
+
+Naa Cheli Rojave… Naalo Unnaave
+Ninne Thalichene Nene…
+
+Gaali Nannu Thaakinaa… Ninnu Thaaku Gnapakam…
+Gulaabeelu Poosinaa… Chilipi Navvu Gnapakam
+Alalu Pongi Paarithe… Cheliya Paluku Gnapakam…
+Meghamaala Saagithe… Moha Kathalu Gnapakam…
+
+Manasu Lekapothe Manishi Endhukanta…
+Neevu Lekapothe Bathuku Dandaganta…
+Kanipinchavo… Andhinchavo ThooooDu…
+
+Naa Cheli Rojave… Naalo Unnaave
+Ninne Thalichene Nene…
+
+Kallallo Neeve… Kanneeta Neeve…
+Kanumoosthe Neeve… Edhalo Nindeve…
+Kanipinchavo Andhinchavo ThooooDu…
+
+Cheliya Chentha Ledhule… Challa Gaali Aagipo
+Mamatha Dhooramaayene… Chandamama Dhaagipo…
+
+Kurula Sirulu Levule… Poolavanam Vaadipo
+Thoduledhu Gaganamaa… Chukkalaagaa Raalipo…
+Manasuloni Maata Aalakinchalevaa…
+Veediponi Needai… Ninnu Cheraneevaa…
+Kanipinchavo Andhinchavo ThoooDu…
+
+Naa Cheli Rojave… Naalo Unnaave
+Ninne Thalichene Nene…
+
+Kallallo Neeve… Kanneeta Neeve…
+Kanumoosthe Neeve… Edhalo Nindeve…
+Kanipinchavo Andhinchavo ThooooDu…`},
+  { title: "🎵 Vennalave vennalave", preview: "https://drive.google.com/file/d/13Gddn4cIhzDgOQi6iDF_NgK9ekxjYQkJ/preview", lyrics:`Vennelave Vennelave
+Minne Dhaati Vasthaava
+Virahaana Jodee Neeve, Heyy
+Vennelave Vennelave
+Minne Dhaati Vasthaava
+Virahaana Jodee Neeve
+
+Vennelave Vennelave
+Minne Dhaati Vasthaava
+Virahaana Jodee Neeve
+Neeku Bhoolokula Kannu Sokemundhe
+Poddhu Thellaareloga Pampisthaa, Aa
+
+Vennelave Vennelave
+Minne Dhaati Vastaava
+Virahaana Jodee Neeve
+
+Idhi Sarasaala Tholi Paruvaala
+Jatha Sayantram SyeAnna Mandaaram
+Idhi Sarasaala Tholi Paruvaala
+Jatha Sayantram SyeAnna Mandaaram
+
+Cheli Andaala… Cheli Muddaade
+Chiru Moggallo… Siggese Punnaagam
+
+Pillaaa… Pillaaa
+Bhoolokam Daadaapu… Kannu Mooyu Vela
+Paadenu Kusumaalu… Pachha Gaddi Meena
+Ye Puvvullo Thadi Andhaalo… Andhaale Ee Vela
+
+Vennelave Vennelave
+Minne Dhaati Vasthaava… Virahaana Jodee Neeve
+Neeku Bhoolokula Kannu Sokemundhe
+Poddhu Thellaareloga Pampisthaa
+
+Etthainaa Gaganamlo Nilipevaarevaranta
+Kougitlo Chikkupade Gaaliki Addevaranta
+Yedha Gilli Gillee… Vasanthanne Aadainche
+Hrudhayamlo Vennelale Ragilinche Varevaru
+
+Pillaaa… Pillaaa
+Poodhota Nidarommani… Poole Varinchu Vela
+Pootheega Kalalopala… Thene Grahinchu Vela
+Aha Vayase Rasaala Vindhaithe
+Premalle Preminchu
+
+Vennelave Vennelave
+Minne Dhaati Vasthaava Virahaana Jodee Neeve
+Neeku Bhoolokula Kannu Sokemundhe
+Poddhu Thellaareloga Pampisthaa`},
+  { title: "🎵 Anaganaga akasam", preview: "https://drive.google.com/file/d/1M8Za3GDqgLIxcnt6XppjHLtyjRL8puw2/preview", lyrics:`Anaganaga aakaasham vundi aakaashamlo megham vundi
+Meghamvenaka raagam vundi raagam ningini kariginchindi
+Karige ningi chinukayindi chinuke chitapata paatayindi
+chitapata paate taake nela chilakalu vaale chettayindi
+naa chilaka nuvve kaavaali naa raa chilaka navve kaavaali
+raagaala puvvai raavaali anuraagaala muvvai mogaali
+
+anaganaga aakaasham vundi aakaashamlo megham vundi
+Megham venaka raagam vundi raagam ningini kariginchindi
+Karige ningi chinukayindi chinuke chitapata paatayindi
+chitapata paate taake nela chilakalu vaale chettayindi
+naa chilaka nuvve kaavaali naa raa chilaka navve kaavaali
+raagaala puvvai raavaali anuraagaala muvvai mogaali
+
+vooge kommallona chiru gaali kavvaali paadi karccheri chese velallo
+gundela gummallona saradaale sayyaatalu aadi thalaale vese velallo
+kerinthale ye dikkuna chustunna kavvintagaa aa aa
+aa.nee chelime chitikesi nanu pilicheyi neekesi
+nee chelime chitikesi nanu pilicheyi neekesi
+nuvvu chevilocheppe oosula kosam nenocchesaa parugulu teesi
+naa chilaka nuvve kaavaali naa raa chilaka navve kaavaali
+raagaala puvvai raavaali anuraagaala muvvai mogaali
+
+chukkallokam chuttu tiragaali anukuntu vuha vurege vennela daarullo
+nenunna rammantu o thara naa kosam vechi
+Saavaasam panche samayamlo
+nurellaki saripoye aashalni pandinchagaa aa
+aa ee sneham chigurinchi ekaantam pulakinchi
+anubandhaale suma gandhaalai aanandaale viraboostu unte
+naa chilaka nuvve kaavaali naa raa chilaka navve kaavaali
+raagaala puvvai raavaali anuraagaala muvvai mogaali
+
+anaganaga aakaasham vundi aakaashamlo megham vundi
+Megham venaka raagam vundi raagam ningini kariginchindi
+Karige ningi chinukayindi chinuke chitapata paatayindi
+chitapata paate taake nela chilakalu vaale chettayindi
+naa chilaka nuvve kaavaali naa raa chilaka navve kaavaali
+raagaala puvvai raavaali anuraagaala muvvai mogaali`},
+  { title: "🎵 Konte chuputho", preview: "https://drive.google.com/file/d/1rNYkdWDLWsq2KPYX-7Y7IzME1gt4QEwM/preview", lyrics:`Konte Chooputho… Nee Konte Chooputho
+Naa Manasu Mellagaa… Challagaa Dhochaave
+Chinni Navvutho… Oka Chilipi Navvutho
+Edho Maayajesi… Anthalone Mounamelane
+
+Konte Chooputho… Nee Konte Chooputho
+Naa Manasu Mellagaa… Challagaa Dhochaave
+Chinni Navvutho… Oka Chilipi Navvutho
+Edho Maayajesi… Anthalone Mounamelane
+
+Maata Raani Mounam… Manase Thelipe
+Edha Chaatumaatu Gaanam… Kanule Kalipe Ee Vela
+Kallu Raase Nee Kallu Raase… Oka Chinni Kavitha Premenemo
+Adhi Chadivinappudu… Naa Pedhavi Chappudu
+Tholi Paate Naalo Palikinadhi
+
+Pagale Reyainaa Yugame Kshanamainaa… Kaalam Neethoti Karaganee
+Andhani Jaabilli Andhina Ee Vela… Iruvuru Dhooraalu Karaganee
+Odilo Vaalaalanunnadhi… Vaddhani Siggaaputhunnadhee
+Thadabadu Gundelalo Momaatamidhi
+
+Konte Chooputho… Nee Konte Chooputho
+Naa Manasu Mellagaa… Challagaa Dhochaave
+Chinni Navvutho… Oka Chilipi Navvutho
+Edho Maayajesi… Anthalone Mounamelane
+
+Kallalo Nidhrinchi Kalale Mudhrinchi… Madhilo Dhooraavu Chilipigaa
+Ninne Aashinche NInne Shwaasinchi… Neeve Nenantu Thelupagaa
+Choopulu Ninne Pilichene… Naa Oopiri Neekai Nilichene
+Chaavuku Bhayapadane… Nuvvunte Chentha
+
+Kallu Raase Nee Kallu Raase… Oka Chinni Kavitha Premenemo
+Adhi Chadivinappudu… Naa Pedhavi Chappudu
+Tholi Paate Naalo Palikinadhi
+Maata Raani Mounam… Manase Thelipe
+Edha Chaatumaatu Gaanam… Kanule Kalipe Ee Vela
+
+
+Konte Chooputho… Nee Konte Chooputho
+Naa Manasu Mellagaa… Challagaa Dhochaave
+Chinni Navvutho… Oka Chilipi Navvutho
+Edho Maayajesi… Anthalone Mounamelane`},
+  { title: "🎵Pachani Chilakalu", preview: "https://drive.google.com/file/d/1XV5VprjJ5l-bt7KvhQGIJFlFkhqvrgPL/preview", lyrics:`tandaanaane Taanaane AanandamE (x4)
+pacchani Chilukalu Todunte Paade
+koyila Ventunte Bhoolokame Aanandaaniki
+
+illu Ee Lokamlo Kanneerinka Chellu
+pacchani Chilakalu todunte Paade Koyila
+ventunte Bhoolokame Aanandaaniki Illu Ee
+lOkamlO Kanneerinka Chellu
+
+chinna Chinna Gootilone Swargamundile…are
+chinni Chinni GunDellOna PrEma Inkipodule
+seetaakokaa Chilukaku Cheeralenduku…are
+prEma UnTe ChaalunanTa Dabbu Gibbu Lendukanta
+
+pacchani Chilukalu||
+
+andani MinnE Aanandam AndE Manne
+aanandam Bhoomini Cheelchuku Putte
+pacchani Pasirika Aanandam
+
+manchuki Ende Aanandam Vaaguki Vaane
+aanandam…are Endaki Vaanaki Rangulu
+maare Prakruti Aanandam
+
+bratuke Noorellandam Bratuke Brahmaanandam
+cheliya Vayasudige Swagatamlo Anubhandam
+anandamaanandam
+
+pacchani Chilukalu||
+
+nee Swaasanu nenaite…naa Vayase
+aanandam Maru Janmaku NannE Kannaavante
+inkaa Aanandam
+
+chali Guppe Maasamlo Cheli Volle Aanandam…
+naa Chevulanu Moostoo Duppati Kappe Karune
+aanandam Andam O Aanandam Bandham Paramaanandam…
+
+cheliyaa Itarulakai Kanu Jaare Kanneere
+ananda Maanandam
+pacchani Chilukalu||
+`},
+  { title: "🎵Allari Allari", preview: "https://drive.google.com/file/d/17UELSXUeNuI2Mzh9djpjg9aVIPxOXpH0/preview", lyrics:`Aha Allari Allari Choopulatho… Oka Gillari Modhalaaye
+Iha Mellaga Mellaga Edhalona… Chiru Gilludu Shuruvaaye
+Arre Chekkile Giligili Ginthaaye… Ee Thikka Gaali Valana
+Mari Ukkiri Bikkiri Ayipoye… Ee Raathiri Dhayavalana… Aa Aa
+
+Thaanna Dheenna Thaanna… Thanninaare Thalaangu Thakkadhinna
+Arre..! Thaanna Dheenna Thaanna… Thanninaare Thalaangu Thakkadhinna
+ 
+Uu..! Bugge Nimurukunte Naaku… Arre Motimai Thaguluthuntadhi
+Leletha Nadumuloni Madatha… Thana Muddukai Vechi Unnadhi
+Innaalla Naa Edhuru Choopulannee… Thana Thalwaaru Kallalona Chikkukunnave
+Mottham Nela Meedhi Mallelannee… Thana Navvullo Kummaristhade
+
+Thaanna Dheenna Thaanna… Thanninaare Thalaangu Thakkadhinna
+Arre..! Thaanna Dheenna Thaanna… Thanninaare Thalaangu Thakkadhinna
+
+Aa Aa Aa Aa Aa AaAaAa… AaAaAa AaAaAa
+Dharenaa… AaAaAa… Dharenaa… AaAaAa… Naa
+Paninisasasa Nisagarinisa… Paninisasasa Nisagarinisa
+Paninisasasa Nisagarinisa… Paninisasasa Nisagarinisa
+Mamapa Neepa Neepa Nisanisa… Mamapa Neepa Neepa Risanipa
+Mamapa Neepa Neepa Nisanisa… Mamapa Gaga Pagagapa
+
+Pere Palukuthunte Chaalu… Naa Pedhave Theeyagavuthadhi
+Thana Choope Thaakuthunte Nannu… Abba Naa Manasu Pachhigavuthadhi
+Merise Merupalle Vaanosthe… Abba Naa Gundelona Pidugu Paduthuntadhe
+Edhapai Okkasaari Hatthukunte… Ika Naa Oopiraagipothadhe
+
+Thaanna Dheenna Thaanna… Thanninaare Thalaangu Thakkadhinna
+Thaanna Dheenna Thaanna… Thanninaare Thalaangu Thakkadhinna`},
+  { title: "🎵Maate Raani Chinnadhani", preview: "https://drive.google.com/file/d/1EoWTHSGL-EnsGT-9K1nPmXbzQquJqizC/preview", lyrics:`Mate Rani Chinnadani Kallu Palike Oosulu
+Andhaalanni Pallavinchi… Aalapinche Paatalu
+Preme Naaku Panche Gnapakaaluraa
+Rege Mooga Thalape Valapu Pantaraa
+
+MateRani Chinnadhaani
+Kallu Palike Oosulu
+Andhaalanni Pallavinchi
+Aalapinche Paatalu
+Preme Naaku Panche Gnapakaaluraa
+Rege Mooga Thalape Valapu Pantaraa
+
+Vennelalle Poolu Virisi
+Thenelu Chilikenu
+Chentha Cheru Aadhamarachi
+Premalu Kosarenu
+
+Chandhanaalu Jallu Kurise
+Choopulu Kalisenu
+Chandhamaama Patta Pagale
+Ningini Podichenu
+
+Kannepilla Kalale Naakika Lokam
+Sannajaaji Kalale Mohana Raagam
+Chilaka Palukulu… Alakala Ulukulu
+Naa Cheli Sogasulu Nanne Maripinche, ha ha
+
+Maate Raani Chinnadhaani
+Kallu Palike Oosulu
+Andhaalanni Pallavinchi
+Aalapinche Paatalu
+
+Preme Naaku Panche
+Gnapakaaluraa
+Rege Mooga Thalape
+Valapu Pantaraa
+
+Muddhabanthi Letha Navvulu
+Chindhenu Madhuvulu
+Oosulaadu Meni Vagalu
+Vannela Jilugulu
+
+Harivilluloni Rangulu
+Naa Cheli Sogasulu
+Sandhe Vela Palike Naalo Pallavi
+Santhasaala Sirule Naave Annavi
+Musi Musi Thalapulu Tharagani Valapulu
+Naa Cheli Sogasulu Annee Ika Naave
+
+Maate Raani Chinnadhaani
+Kallu Palike Oosulu
+Andhaalanni Pallavinchi
+Aalapinche Paatalu
+
+Preme Naaku Panche
+Gnapakaaluraa
+Rege Mooga Thalape
+Valapu Pantaraa`}
+];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src = src + "?autoplay=1&mute=1";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[200,230,210,220,210,200,190];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur=songDurations[index] || 210;
+  window.endTimeout=setTimeout(nextSong,dur*1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+document.getElementById('centerPlayer').onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="bored back.html";
+}
+function openPlaylist(){
+  window.location.href="all back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

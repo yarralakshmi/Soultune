@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>😔 Healing Sounds for You</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #83a4d4, #b6fbff);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+    animation: bgMove 10s ease infinite;
+    background-size: 400% 400%;
+  }
+
+  @keyframes bgMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .container {
+    text-align: center;
+    animation: fadeIn 1s ease;
+  }
+
+  h1 {
+    font-size: 2.3em;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #555;
+    margin-bottom: 45px;
+    font-size: 1.2em;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+
+  .music-btn {
+    padding: 18px 40px;
+    border: none;
+    border-radius: 20px;
+    font-size: 1.1em;
+    font-weight: 500;
+    cursor: pointer;
+    color: #111;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    min-width: 230px;
+    min-height: 65px;
+  }
+
+  /* Individual button colors */
+  .piano {
+    background: linear-gradient(135deg, #f9d423, #ff4e50);
+  }
+
+  .flute {
+    background: linear-gradient(135deg, #83a4d4, #b6fbff);
+  }
+
+  .nature {
+    background: linear-gradient(135deg, #ffecd2, #fcb69f);
+  }
+
+  /* Hover animation */
+  .music-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+  }
+
+  /* Back button styling */
+  .back-btn {
+    margin-top: 50px;
+    padding: 16px 40px;
+    font-size: 1.1em;
+    font-weight: 500;
+    border: none;
+    border-radius: 35px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #4a90e2, #0072ff);
+    color: white;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+  }
+
+  .back-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>😔 Healing Sounds for You</h1>
+    <p>Pick the vibe that helps your heart heal and glow 🎵</p>
+    <div class="button-container">
+      <button class="music-btn piano" onclick="goTo('piano')">Healing Piano 🎹</button>
+      <button class="music-btn flute" onclick="goTo('flute')">Spirutuality✨</button>
+      <button class="music-btn nature" onclick="goTo('nature')">Uplifting / Positive Songs💖</button>
+    </div>
+    <button class="back-btn" onclick="goBack()">⬅ Emotions</button>
+  </div>
+
+  <script>
+    function goTo(type) {
+      let url = "";
+      switch (type) {
+        case "piano":
+          url = 'file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/sad-and-piano.html';
+          break;
+        case "flute":
+          url = 'file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/sad-and-spiritual.html';
+          break;
+        case "nature":
+          url = 'file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/sad-and-positive.html';
+          break;
+        default:
+          alert("🎵 Page under construction!");
+          return;
+      }
+      window.location.href = url;
+    }
+ 
+   function goBack() {
+      window.location.href = "file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/emotions%20h2.html";
+
+    }
+  </script>
+</body>
+</html>

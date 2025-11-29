@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SoulTune | Where Every Emotion Finds Its Peace</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #f8cdda, #fbc7d4, #fad0c4, #ffd1ff);
+      background-size: 400% 400%;
+      animation: gradientMove 10s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      color: #333;
+      overflow: hidden;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      max-width: 600px;
+      padding: 30px;
+      border-radius: 20px;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    h1 {
+      font-size: 2.4em;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-size: 1.05em;
+      color: #555;
+      margin-bottom: 35px;
+      line-height: 1.7;
+    }
+
+    button {
+      background: linear-gradient(135deg, #4a90e2, #005bea);
+      color: #fff;
+      border: none;
+      padding: 14px 36px;
+      font-size: 1.1em;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 91, 234, 0.4);
+    }
+
+    button:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 20px rgba(0, 91, 234, 0.5);
+      background: linear-gradient(135deg, #6ca8ff, #005bea);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌸 Welcome to SoulTune 🌸</h1>
+    <p>
+      Where every emotion — joy, pain, fear, or love — finds its way to peace, faith, and divine calm.  
+      Close your eyes, take a deep breath...  
+      and let your soul tune with the universe ✨
+    </p>
+    <button onclick="startSoulTune()">Let's Start ✨</button>
+  </div>
+
+  <script>
+    function startSoulTune() {
+      // Navigate to your local emotions page
+      window.location.href = "file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/emotions%20h2.html";
+      // Note: spaces must be written as %20 in URLs
+    }
+  </script>
+</body>
+</html>

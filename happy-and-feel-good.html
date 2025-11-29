@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Telugu Dance Reels — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root{
+  --card-w: 45vw; /* wider video player */
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px; /* wider sidebars */
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(-45deg,#ff9a9e,#fad0c4,#fbc2eb,#a6c1ee);
+  background-size:400% 400%;
+  animation:gradientShift 12s linear infinite;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.3);
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.5); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%; /* increased total width */
+  max-width:1800px; /* allow more space */
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.55);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.35);
+  backdrop-filter:blur(6px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#ffd86b;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.05);
+  color:#ffd86b;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.12);
+  box-shadow:0 0 8px rgba(255,255,255,0.15) inset;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#ffd86b,#00aaff);
+  color:#000;
+  box-shadow:0 0 10px rgba(255,255,255,0.25) inset;
+}
+
+/* Bottom buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, filter 0.3s ease;
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+.back-btn{
+  background:linear-gradient(135deg,#89f7fe,#66a6ff);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(0,0,0,0.55);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.35);
+  backdrop-filter:blur(6px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(0,0,0,0.55);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.35);
+  backdrop-filter:blur(6px);
+  overflow:auto;
+}
+.lyrics-panel h3{
+  color:#ffd86b;
+  text-align:center;
+  margin-bottom:8px;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#fff;
+  line-height:1.5;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.4rem;
+  font-weight:700;
+  color:#ffeb3b;
+  text-shadow:0 2px 10px rgba(0,0,0,0.6);
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">Feel-Good Telugu Songs 🎶</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🎵 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎶 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Right Sidebar (Lyrics) -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Bubbles
+const bubblesContainer=document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// Songs
+const songs = [
+  {title: "🎵 Butta Bomma", preview: "https://drive.google.com/file/d/1__zQtkb54-8tDDWTjwH36DoLA4JuHGO9/preview", lyrics: `Inthakanna Manchi Polikedi
+Naaku Thattaledu Gaani Ammu
+
+Ee Love Anedi Bubble-u Gum-mu
+Antukunnadhante Podhu Nammu
+
+Mundu Nunchi Andharanana Maate Gaani
+Malli Anatanaane Ammu
+Idhi Cheppakunda Vache Thummo
+Premanaapaleru Nannu Nammu
+
+Ettaga Anaee Yeduru Choopuki
+Thaginattuga Nuvvu Badhulu Chebithive
+Arey Devuda, Idhendhanentha Lopate
+Pilladanta Deggarayi Nannu Cheradheestive
+
+Butta Bomma
+Butta Bomma
+Nannu Suttukuntive
+Zindagike Atta Bommayi
+Janta Kattukuntive
+Buttabomma, Buttabomma Nannu Suttukuntive
+Zindagi-Ke Atta Bommai Janta Kattu Kuntive
+
+Multiplex Loni Audience Laga
+Mounamguna Gani Ammu
+Lona Dandanaka Jariginde Nammu
+Dimma Diriginaade Mind Sim-mu
+Rajula Kalam Kaadhu
+Rathamo Gurran Levu
+Addhan Mundara Natho Nene
+Yudham Chestaante
+
+Gaajula Chethulu Jaapi
+Deggarakochina Nuvvu
+Chepallo Chitikesi
+Chakkaravarthini Chesave
+Chinnaga Chinnkku Thumparadigithe
+Kundapothaga Tufaan-u Thestive
+Maataga O Malle Poovunadigithe
+Mootaga Pola Thotaga
+Painochi Padithive
+
+Butta Bomma
+Butta Bomma Nannu Suttukuntive
+Zindagi-Ke Atta Bommai Janta Kattu Kuntive
+
+Veli Ninda Nannu Theesi Bottu Pettukuntive
+Kaali Kindi Puvvu Nenu Nethinetu Kuntive
+Inthakanna Manchi Polikedi
+Naaku Thattaledu Gaani Ammu
+Ee Love Anedi Bubble-u Gum-mu
+Antukunnadhante Podhu Nammu
+
+Mundu Nunchi Andharanana Maate Gaani
+Malli Anatanaane Ammu
+Idhi Cheppakunda Vache Thummo
+Premanapaleru Nannu Nammu`},
+  {title: "🎵 Ikem Ikem Kavale", preview: "https://drive.google.com/file/d/1Us95doAew3IC5fZLQ9UKivbrKFgK7pMC/preview", lyrics: `Thadhigina Thakhajanu
+
+Thadhigina Thakhajanu
+
+Tharikita Thadharina
+
+Thadhemdhemtha Aanandham
+
+Thalavani Thalapuga
+
+Yedhalanu Kalupaga
+
+Modhalika Modhalika
+
+Mallee Geetha Govindam
+
+Inkem Inkem Inkem Kaavaaley…
+
+Chaaley Idhi Chaaley…
+
+Neekai Nuvve Vachi Vaalaavey
+
+Ikapai Thiranaalley
+
+Gundellonaa Vegam Penchaavey…
+
+Gummamloki Holi Thechhavey
+
+Nuv Pakkanuntey Inthenemoney
+
+Nakokko Ganta Okko Janmai
+
+Malleeputtee Chasthunnane
+
+Inkem Inkem Inkem Kaavaaley…
+
+Chaaley Idhi Chaaley…
+
+Neekai Nuvve Vachi Vaalaavey
+
+Ikapai Thiranaalley
+
+Thadhigina Thakhajanu
+
+Thadhigina Thakhajanu
+
+Tharikita Thadharina
+
+Thadhemdhemtha Aanandham
+
+Thalavani Thalapuga
+
+Yedhalanu Kalupaga
+
+Modhalika Modhalika
+
+Mallee Geetha Govindam
+
+Oohalaku Dhorakani Sogasaa…
+
+Oopirini Vadhalani Golusaa…
+
+Neeku Mudi Padinadi Thelusaa…
+
+Manasuna Prathi Kosaa
+
+Neekanula Merupula Varasaa…
+
+Repinadhi Vayasuna Rabhasaa…
+
+Naa Chilipi Kalalaku Bhahusaa
+
+Idhi Velugula Dhasaa…
+
+Nee Yedhuta Nilabadu Chanuvey Visaa…
+
+Andhukoni Gaganapu Konaley Choosaa…
+
+Inkem Inkem Inkem Kaavaaley…
+
+Chaaley Idhi Chaaley…
+
+Neekai Nuvve Vachi Vaalaavey
+
+Ikapai Thiranaalley
+
+
+Maayalaku Kadhalani Maguvaa…
+
+Maatalaku Karagani Madhuvaa…
+
+Panthamulu Viduvani Biguvaa
+
+Jariginadhadagavaa…
+
+Naa Kadhani Theluputa Suluvaa…
+
+Jaalipadi Nimishamu Vinavaa…
+
+Yendhukani Gadikoka Godavaa…
+
+Chelimiga Melagavaa…
+
+Naaperu Thalachithey Ubhike Laavaa…
+
+Challabadi Nanu Nuvu Karuninchevaa…
+
+Inkem Inkem Inkem Kaavaaley…
+
+Chaaley Idhi Chaaley…
+
+Neekai Nuvve Vachi Vaalaavey
+
+Ikapai Thiranaalley
+
+Gundellonaa Vegam Penchaavey…
+
+Gummamloki Holi Thechhavey
+
+Nuv Pakkanuntey Inthenemoney
+
+Nakokko Ganta Okko Janmai
+
+Malleeputtee Chasthunnane
+
+Inkem Inkem Inkem Kaavaaley…
+
+Chaaley Idhi Chaaley…
+
+Neekai Nuvve Vachi Vaalaavey
+
+Ikapai Thiranaalley
+
+Thadhigina Thakhajanu
+
+Thadhigina Thakhajanu
+
+Tharikita Thadharina
+
+Thadhemdhemtha Aanandham
+
+Thalavani Thalapuga
+
+Yedhalanu Kalupaga
+
+Modhalika Modhalika
+
+Mallee Geetha Govindam`},
+  {title: "🎵 Edhedho Bagundhe", preview: "https://drive.google.com/file/d/1ZRUvbfVSHYouJ9x2W2E1WUxtnEHPTp0G/preview", lyrics: `Kaatuka Kallanu Choosthe… Pothundhe Mathi Pothundhe
+Chaatuga Nadumunu Choosthe… Pothundhe Mathi Pothundhe
+Ghaatuga Pedhavulanu Choosthe… Pothundhe Mathi Pothundhe
+Raatuga Sogasulu Choosthe… Pothundhe Mathi Pothundhe
+Letuga Inthandhaanni… Chooshaane Anipisthundhe
+Naa Manase Neevaiposthundhe…
+
+Idhedho Baagundhe Cheli… Idhenaa Premante Mari
+Idhedho Baagundhe Cheli… Idhenaa Premante Mari
+Nee Mathi Pogoduthunte… Naakentho Saradhaagundhe
+Aashalu Repeduthunte… Naakentho Saradhaagundhe
+Ninnilaa Allaadisthe… Naakentho Saradhaagundhe
+Andhamgaa Norooristhe… Naakentho Saradhaagundhe
+Nee Kashtam Choosthu Andham… Ayyayyo Ankuntune
+Ilaage Inkaasepantunte…
+
+Idhedho Baagundhe Mari… Idhe Premanukunte Sare
+Idhedho Baagundhe Mari… Idhe Premanukunte Sare
+
+Thelusukuntaavaa Thelupamantaavaa…
+Manasu Anchullo… Ninchunna Naa Kalani
+Edhuru Choosthunna… Edhutane Unna
+Badhulu Dhorikettu… Palikinchu Nee Swaraanni
+Vela Gonthullona… Mogindhe Mounam
+Nuvvunna Chote Nenanee…
+Choosi Chudangaane… Cheppindhi Praanam
+Ne Nneedhaannai Poyaanani…
+
+Idhedho Baagundhe Cheli… Idhenaa Premante Mari
+Idhedho Baagundhe Mari… Idhe Premanaukunte Sari
+Tharachi Choosthoone Tharagadhantunna
+Thaluku Varnaala… Nee Menu Poolagani
+Naligipothoone Veligipothunna
+Thanivi Theerettu… Sandhinchu Choopulanni
+
+Kanti Reppalu Rendu… Pedhavullaa Maari
+Ninne Thinesthaamannaaye…
+Nedo Repo… Adhi Thappadhugaa Mari
+Neekosam Edhainaa Sare…
+dhedho Baagundhe Cheli… Idhenaa Premante Mari
+Idhedho Baagundhe Mari… Idhe Premanaukunte Sari`
+},
+  {title: "🎵 Chali Chali Ga Alindhi", preview: "https://drive.google.com/file/d/1CpxmwcWL6kDBh2KejxL4pvTj6lzJrzTV/preview", lyrics: `O chali chaliga allindi gili giliga gillindi..
+Neevaipe mallindi manasu..
+Chita pata chindesthundi atu itu dookesthundi..
+Sathamathamai pothundi vayasu..
+Chinni chinni chinni chinni ashalu evevo..
+Gichi gichi gichi gichi
+Chitti chitti chitti chitti oosulu inkevo..
+Guchi guchi champesthunnayi..
+ 
+Nuvvu nathone unnattu na needavainattu..
+Nanne chusthunnattu oohalu..
+Nuvvu na oopirainattu nalopalunnattu..
+Edo chebuthunnattu evo kalalu..
+Chali Chaliga..
+ 
+Godavalatho modhalai thaguvulatho biguvai..
+Perigina parichayame needi nadi..
+Thalapulu veraina kalavani theeraina..
+Balapadi pothundhe unde koddi..
+Loyaloki padipothunnattu aakasham paiki veluthunnattu..
+Nuvvu nathone unnattu na needavainattu..
+Nanne chusthunnattu oohalu..
+Nuvvu na oopirainattu nalopalunnattu..
+Edo chebuthunnattu evo kalalu..
+
+Neepai kopanni endari mundhaina..
+Bedhure lekunda thelipe nenu..
+Neepai ishtanni neruga neekaina..
+Thelapalanukunte thadabaduthunnanu..
+Naku nene dhooram authunna..
+Nee allarulanni guruthosthune..
+Nannu nene cheralanukunna....
+Na chenthaki nee adugulu paduthu unte..
+ 
+Nuvvu nathone unnattu na needavainattu..
+Nanne chusthunnattu oohalu..
+Nuvvu na oopirainattu nalopalunnattu..
+Edo chebuthunnattu evo kalalu..
+`},
+  {title: "🎵 Chusa Chusa Oka Hrudhayane", preview: "https://drive.google.com/file/d/1N2Qf7i7svoWatkM32Xsm-l5A9DwTdkKy/preview", lyrics: `Choosa choosa choosa
+Okka hrudayane hrudayane
+Kalisa kalisa kalisa
+Aa hrudayani hrudayani
+Adugulu vesa vesa
+Hrudayamutho hrudayamutho
+Andhincha na hrudayam
+Aa hrudayamuke (x2)
+
+Na matalani nee peruthone
+Nindali thiyaga aa
+Na batalani nuvvannachote
+Aagali haayiga aa
+Oopiralle neeku thodugaa
+Undali anna chinna korika aa
+
+Choosa choosa choosa
+Oka hrudayane hrudayane
+Kalisa kalisa kalisa
+Aa hrudayanni hrudayanni
+Adugulu vesa vesa
+Hrudayamutho hrudayamutho
+Andhincha na hrudayam
+Aa hrudayamuke
+
+Chusa kalisa kalisa kalisa
+Mat Mat Matalaade okkati
+Chin chin chindhulese okkati
+This is the story of them
+Two little hearts come on
+
+Matalade okkati manam marokkatai
+Chindhulese okkati sthiranga okati
+Ganthuthone okkati dhuranga okati
+Premalle okkati prasnalle okati
+
+Choosa choosa choosa
+Oka hrudayanne hrudayane
+Kalisa kalisa kalisa
+Aa hrudayani hrudayani
+Adugulu vesa vesa
+Hrudayamutho hrudayamutho
+Andincha na hrudayam
+Aa hrudayamuke…`},
+  {title: "🎵 Chusi Chudangane", preview: "https://drive.google.com/file/d/1zEHCNj1vBuhg0XGv-A1KVX6r4CLq5RU2/preview", lyrics: `Choosi Chudangaane Nachhesaave
+Adigi Adagakunda Vachhesaave
+Naa Mansuloki
+Ho, Andhangaa Dhooki
+
+Dhooram Dhooranguntu Em cheshave
+Dhaaram Katti Gunde Egareshave
+O Chooputhotee
+Ho Oo Navvuthoti
+
+Tholisaariga… Tholisaariga
+Naa Lopala.. Naa Lopala
+Yemaindo.. Yemaindo
+Thelisedela.. Thelisedela
+
+Naa Chilipi Allarlu
+Naa Chinni Saradhaalu
+Neelone Chushanule
+
+Nee Vanka Chusthunte
+Addhamlo Nannenu
+Chusthunatte Undhile, Ho
+
+Nee Chitraalu Okkoti Chusthu Unte
+Aah! Ee Janmaki Idhi Chaalu Anipistunde
+
+Nuv Naa Kanta Padakunda
+Naa Venta Padakunda… Innallekkada Unnave
+Nee Kannullo Aanandham Vasthundante
+Nenennenno Yuddhaalu Chesthanule
+Nee Chirunavvukai Nenu Gelupondhi Vasthanu
+Haami Isthunaanule
+
+Okato Ekkam Kuda Marichipoyelaga
+Okate Gurthosthaave
+Ninu Choodakunda Undagalana
+
+Naa Chilipi Allarlu
+Naa Chinni Saradhaalu
+Neelone Chushanule
+
+Nee Vanka Chusthunte
+Addhamlo Nannenu
+Chusthunatte Undhile, Ho`},
+  {title: "🎵 Areyre Ekada Ekada", preview: "https://drive.google.com/file/d/1TDBHNNcdcWivIzyThJIq0wLK0FO0pP73/preview", lyrics: `Arere yekkada yekkada
+Yekkada yekkda yekkda na praanam
+Ee prasnaku nuvve le samadhanam
+Arere yeppudu yeppudu
+Yeppudu yeppudu neetho na payanam
+Ee prasnaku badhulega ee nimisham
+Matalne mariche santosham
+Paatalle marindhi prathikshanam
+
+Arere yekkada yekkada
+Yekkada yekkda yekkda na praanam
+Ee prasnaku nuvve le samadhanam
+Arere yeppudu yeppudu
+Yeppudu yeppudu neetho na payanam
+Ee prasnaku badhulega ee nimisham
+
+Ningilo aa chukkalanni
+Okatiga kalpithe mana bomma kaadha
+Dhaarilo ee puvvulanni
+Jantaga vesina mana adugulega
+Mabbullo chinukulu manamanta
+Maname chereti ye chotaina
+Aipodha poodhota
+
+Arere yekkada yekkada
+Yekkada yekkda yekkda na praanam
+Ee prasnaku nuvve le samadhanam
+Arere yeppudu yeppudu
+Yeppudu yeppudu neetho na payanam
+Ee prasnaku badhulega ee nimisham
+
+Kallatho o choopu muddhe
+Ivvadam nerputha nerchukova
+Pedhavitho pedhavulaki muddhe
+Adagatam theliyani alavatu marchava
+Kaatukane dhiddhe velautha
+Aa vele patti ye vela
+Nee venta adugestha
+
+Yekkada yekkada yekkada yekkda
+Yekkda na praanam
+Ee prasnaku nuvve le samadhanam
+Arere yeppudu yeppudu
+Yeppudu yeppudu neetho na payanam`},
+  {title: "🎵 Nilluvadham", preview: "https://drive.google.com/file/d/1lf21UgL1JrkaZfwxwV3zC_MkOOIwp1zZ/preview?usp=sharing", lyrics: `Niluvaddhamu Ninu Epudaina
+Nuvvu Evvaru Ani Adigenaa
+Aa Chitrame Gamanisthunna Kotthaga
+Nuvvu Vinnadhi Nee Perainaa
+Ninu Kaadhani Anipinchenaa
+Aa Sangathi Kanipedhuthunna Vinthagaa
+
+Nee Kannula Merise Roopam
+Naadhenaa Anukuntunnaa
+Nee Thenela Pedavulu Palike
+Thiyyadhanam Naa Perenaa
+Adhi Nuvve Ani Nuvve Chebuthu Unnaa
+Lara Laila Lailalle
+Lara Laila Lailalle
+Lara Laila Lailalle
+Laile Laile Lailele
+
+Heyy, Niluvaddhamu Ninu Epudaina
+Nuvvu Evvaru Ani Adigenaa
+Aa Chitrame Gamanisthunna Kotthaga, AaAa
+
+Haa, Prathi Adugu Thanaku Thaane
+Saagindhi Neevaipu Naamaata
+Vinnattu Nenapalenanthagaa
+Bhayapadaku Adhi Nijame
+Vasthondhi Ee Maarpu
+Nee Kothi Chindhulni
+Naatyaalugaa Maarchagaa
+Nanninthagaa Maarchendhuku
+Neekevvarichhaaru Hakku
+Nee Premane Prashninchuko
+Aa Nindha Naakenduku
+
+Lara Laila Lailalle
+Lara Laila Lailalle
+Lara Laila Lailalle
+Laile Laile Lailele
+Niluvaddhamu Ninu Epudaina
+Nuvvu Evvaru Ani Adigenaa
+Aa Chitrame Gamanisthunna Kotthaga
+Haa, Idhi Varaku Edhalayaku
+Ye Maathramu Ledhu Horetthu
+Ee Joru Kangaaru Pettenthagaa
+Thadabadaku Nanu Adugu
+Chebuthaanu Paataalu Lelletha Paadhaalu
+Jalapaatha Mayyettugaa
+
+Naa Daarine Mallinchagaa
+Neekendhuko Antha Pantham
+Mana Chethilo Unte Kadhaa
+Preminchadam Maanatam
+Lara Laila Lailalle
+Lara Laila Lailalle
+Lara Laila Lailalle
+Laile Laile Lailele
+
+Niluvaddhamu Ninu Epudaina
+Nuvvu Evvaru Ani Adigenaa
+Aa Chitrame Gamanisthunna Kotthaga
+Nuvvu Vinnadhi Nee Perainaa
+Ninu Kaadhani Anipinchenaa
+Aa Sangathi Kanipedhuthunna Vinthagaa
+Nee Kannula Merise Roopam
+Naadhenaa Anukuntunnaa
+Naa Menuku Aa Thiyyadhanam
+Nee Pedave Andhinchanaa
+Adhi Nuvve Ani Nuvve Chebuthu Unnaa
+
+Lara Laila Lailalle
+Lara Laila Lailalle
+Lara Laila Lailalle
+Laile Laile Lailele`},
+  {title: "🎵 Hoyna", preview: "https://drive.google.com/file/d/1pED6-oOp2g8LZ_8LcqWxLw1EpPtqs-ti/preview?usp=sharing", lyrics: `Hoyna… Em Chandhiniraa
+Hoyna… Em Chamakkidhiraa
+Hoyna… Em Merisenuraa Kannulaaraa
+Hoyna… Vennela Nadhiraa
+Hoyna… Vannela Nidhiraa
+Hoyna… Em Kulikenuraa Kanne Taaraa
+
+Aa Kannullo Koluvai Undendhuku Neelaakasam Vaaladaa
+Aa Gundello Lothuni Kolichendhuku Sandram Selayeraindhiraa
+
+Hoyna… Em Chandhiniraa
+Hoyna… Em Chamakkidhiraa
+Hoyna… Em Merisenuraa Kannulaaraa
+Hoyna… Vennela Nadhiraa
+Hoyna… Vannela Nidhiraa
+Hoyna… Em Kulikenuraa Kanne Taaraa
+Hoyna Hoyna Hoyna… Hoyna Hoyna Hoyna
+Ho Oo Oo… Vagalamaari Naava
+Hoyalumeeri Naava… Alala Ooyalooginaava
+Thaluku Choopinaava… Thalapu Repinaava
+Kalala Venta Laaginaava
+
+Oo Oo Ooo…….
+Sarada Mithimeeri… Aduge Yemaari
+Sudilo Padathose Allari
+Thwaragaa Saagaali Dharike Cheraali
+Padava Podhaam Pada Aagake Mari
+Hoyna… Em Chandhiniraa
+Hoyna… Em Chamakkidhiraa
+Hoyna… Em Merisenuraa Kannulaaraa
+Hoyna… Vennela Nadhiraa
+Hoyna… Vannela Nidhiraa
+Hoyna… Em Kulikenuraa Kanne Taaraa, Aa Aa
+
+Ho, Neetiloni Needa… Chethikandhuthunna
+Thaaki Choodu Chedhiripodaa
+Gaaliloni Meda Maaya Lady Kaadha
+Tharimi Choodu Dhorukuthundhaa
+Oo Oo OoOo……..
+Chakkaani Daana Chukkaani Kaana
+Nee Chikkulannee Daatagaa
+Vaddhu Anukunnaa Vadalanu Nerajaana
+Nene Nee Janta Ani Raasi Undhigaa
+
+Hoyna… Em Chandhiniraa
+Hoyna… Em Chamakkidhiraa
+Hoyna… Em Merisenuraa Kannulaaraa
+Hoyna… Vennela Nadhiraa
+Hoyna… Vannela Nidhiraa
+Hoyna… Em Kulikenuraa Kanne Taaraa, Aa Aa
+Hoyna Hoyna Hoyna… Hoyna Hoyna Hoyna`},
+  {title: "🎵 Mate Vinnadhuga", preview: "https://drive.google.com/file/d/1_qk7UHiHOG_epQydabdM7V0gDrfXgkve/preview?usp=sharing", lyrics: `Maate Vinadhuga Lyrics In English
+
+Maate Vinadhuga… Maate Vinadhuga
+Maate Vinadhuga… Maate Vinadhuga
+
+Perige Vegame… Thagile Meghame
+Asale Aagadhu Ee Paruge
+Okate Gamyame… Dhaarulu Verule
+Payaname Nee Panile
+
+Arere… Puduthu Modhale
+Malupu Kudhupu Needhe
+Aa Addhame Chupenu Brathukulalo Theere
+Aa Wipere Thudiche… Kaare Kanneere
+
+Maate Vinadhuga… Vinadhuga Vinadhuga
+Veegam Digadhuga… Digadhuga, Vegam
+Maate Vinadhuga… Vinadhugaaa Vinadhugaaa
+Vegam Vegam… Vegam
+
+Maate Vinadhuga… Vinadhuga Vinadhuga
+Vegam Digadhuga… Digadhuga, Vegam
+Maate Vinadhuga… Vinadhuga Vinadhuga
+Vegam Vegam Vegam
+
+Perige Vegame… Thagile Meghame
+Asale Aagadhu Ee Paruge
+Okate Gamyame… Dhaarulu Verule
+Payaname Nee Panile
+
+Arere… Puduthu Modhale
+Malupu Kudhupu Needhe
+Aa Addhame Chupenu Brathukulalo Theere
+Aa Wipere Thudiche… Kaare Kannire
+
+Chinni Chinni Chinna
+Navve Vedhakadame
+Brathukante
+Konni Andhulonaa
+Panchava Migaulunte, Ho Ho
+
+Needhane Snehame
+Nee Manassu Choopuraa
+Needalaa Veedaka
+Saayaanne Nerpuraa
+
+Kashtalenni Raani
+Jebhe Khaali Kaani
+Naduchunule Bandi Naduchunule
+Dhaare Maariponi… Oore Marchiponi
+Veedakule Shrama Viduvakule
+
+Thadi Aare Edhapai
+Musirenu Megham
+Manasantha Thadisela
+Kurise Vaanaa
+
+Maate Vinadhuga… Vinadhuga Vinadhuga
+Veegam Digadhuga Digadhuga, Vegam
+Maate Vinadhuga… Vinadhugaaa Vinadhugaaa
+Vegam Vegam… Vegam
+
+Maate Vinadhuga… Vinadhuga Vinadhuga
+Vegam Digadhuga Digadhuga, Vegam
+Maate Vinadhuga… Vinadhuga Vinadhuga
+Vegam Vegam Vegam
+Maate Vinadhuga… Maate Vinadhuga
+
+Perige Vegame… Thagile Meghame
+Asale Aagadhu Ee Paruge
+Okate Gamyame… Dhaarulu Verule
+Payaname Nee Panile
+
+Arere… Puduthu Modhale
+Malupu Kudhupu Needhe
+Maru Janmatho Parichayam
+Anthalaa Paravasham
+Rangu Chinukule Gundepai Raalenaa`},
+];
+
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+const centerPlayer=document.getElementById('centerPlayer');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src=src+"?autoplay=1&mute=0";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[210,240,200,230,180,210,190,200,210,220];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur = songDurations[index] || 210;
+  window.endTimeout = setTimeout(nextSong, dur * 1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+centerPlayer.onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/happy%20back.html";
+}
+function openPlaylist(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

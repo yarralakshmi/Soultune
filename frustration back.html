@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SoulTune | Ease the Frustration</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #ff9f9f, #ffd6a5);
+      color: #222;
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: background 1s ease;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 1.1em;
+      color: #444;
+      margin-bottom: 40px;
+    }
+
+    .music-container {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .music-btn {
+      position: relative;
+      padding: 16px 38px;
+      border: none;
+      border-radius: 18px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow:
+        inset 0 1px 3px rgba(255, 255, 255, 0.5),
+        0 5px 12px rgba(0, 0, 0, 0.25);
+      min-width: 200px;
+      min-height: 55px;
+      color: #000;
+      overflow: hidden;
+    }
+
+    /* Button 1: Light → Dark */
+    .btn1 {
+      background: linear-gradient(to right, #ffcf91, #ff7e5f);
+    }
+
+    /* Button 2: Dark → Light */
+    .btn2 {
+      background: linear-gradient(to right, #5f72be, #9b23ea);
+      color: #fff;
+    }
+
+    /* Button 3: Light → Dark */
+    .btn3 {
+      background: linear-gradient(to right, #a8edea, #fed6e3);
+    }
+
+    .music-btn:hover {
+      transform: scale(1.05);
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.25),
+        inset 0 0 10px rgba(255, 255, 255, 0.4);
+    }
+
+    .back-btn {
+      margin-top: 40px;
+      background: linear-gradient(to right, #4e6ef2, #1b3de0);
+      color: #fff;
+      font-size: 1em;
+      font-weight: 600;
+      padding: 14px 36px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <h1>🔥 Ease the Frustration</h1>
+    <p>Pick the sound that melts away anger and restores your calm 🎶</p>
+
+    <div class="music-container">
+      <button class="music-btn btn1" onclick='window.location.href="C:/Users/yarra/OneDrive/ドキュメント/html/music/frustration-and-violin.html"'>Soothing Violin 🌅</button>
+      <button class="music-btn btn2" onclick='window.location.href="C:/Users/yarra/OneDrive/ドキュメント/html/music/frustration-and-songs.html"'>Cooling Rain Songs 🌧️</button>
+      <button class="music-btn btn3" onclick='window.location.href="C:/Users/yarra/OneDrive/ドキュメント/html/music/frustration-and-beats.html"'>Telugu Beats 🌬️</button>
+    </div>
+
+    <button class="back-btn" onclick='window.location.href= "file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/emotions%20h2.html"'>⬅ Emotions</button>
+  </div>
+</body>
+</html>

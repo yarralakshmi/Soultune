@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root{
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(-45deg, #001f3f, #003366, #002147, #000c1f);
+
+  background-size:400% 400%;
+  animation:gradientShift 15s ease infinite;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.25);
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%;
+  max-width:1800px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#00e6ff;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.08);
+  color:#00e6ff;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.15);
+  box-shadow:0 0 8px rgba(255,255,255,0.15) inset;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#00e6ff,#00ffa3);
+  color:#000;
+  box-shadow:0 0 10px rgba(255,255,255,0.3) inset;
+}
+
+/* Buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, filter 0.3s ease;
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+.back-btn{
+  background:linear-gradient(135deg,#a1c4fd,#c2e9fb);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics panel */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:auto;
+}
+.lyrics-panel h3{
+  color:#00ffa3;
+  text-align:center;
+  margin-bottom:8px;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#fff;
+  line-height:1.6;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.5rem;
+  font-weight:700;
+  color:#00e6ff;
+  text-shadow:0 2px 10px rgba(0,0,0,0.7);
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">✨ Spirutuality 🎶</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🌿 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Video Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Lyrics Sidebar -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+<script>
+// Floating bubbles
+const bubbles = document.getElementById("bubbles");
+for (let i = 0; i < 25; i++) {
+  const b = document.createElement("div");
+  b.className = "bubble";
+  const size = Math.random() * 20 + 10;
+  b.style.width = b.style.height = size + "px";
+  b.style.left = Math.random() * 100 + "%";
+  b.style.animationDuration = 8 + Math.random() * 8 + "s";
+  b.style.animationDelay = Math.random() * 5 + "s";
+  bubbles.appendChild(b);
+}
+
+// Songs list
+const songs = [
+ {
+    title: "🎶 Devullemechindhi",
+    preview: "https://drive.google.com/file/d/1yET0aliMzs_itEN6n7RXdoalQtbci6pv/preview",
+   lyrics: `Devulle Mechindi… Meemundhe Jarigindi
+Vedamlaa Nilichindhi… Seetharama Katha
+Vinudi Ika Vinudee… Aa Mahime Ika Kanudee
+
+Meekosam Raasindi… Mee Manchi Korindhi
+Mee Mundhukochhindhi… Seetharama Katha
+Vinudi Ika Vinudee… Aa Mahime Ika Kanudee
+
+Intinta Sukha Shanti Osage Nidhi
+Manasantha Veliginchi Nilipe Nidhi
+Sariraani Ghanulandari Nadipe Katha Idhiye
+
+Devulle Mechindi… Meemundhe Jarigindi
+Vedamlaa Nilichindhi… Seetharama Katha
+Vinudi Ika Vinudee… Aa Mahime Ika Kanudee
+
+Ayodhyanele Dasaradha Raaju
+Athani Kulasathulu Gunavathulu Munguru
+Putrakaama Yaagam Chesenu Raaje
+Raanulu Kousalya Sumitra Kaikalatho
+Kaligiri Vaariki Shree Varaputhrulu
+Ramalakshamana Bharata Shathrugnulu Naluguru
+Raghuvamshame Velige Ila Mudhamondhiri Janule
+
+Devulle Mechhindi… Meemundhe Jarigindi
+Vedamlaa Nilichindhi… Seetharama Katha
+Vinudi Ika Vinudee… Aa Mahime Ika Kanudee
+
+Dasharatha Bhoopathi… Pasi Ramuni Premalo
+Kaalame Marichenu… Koushikudethinchenu
+Thana Yaagamu Kaapaadaga… Raamuni Pampaalani
+Mahimaanvitha Asthraalanu… Upadeshamu Chese
+Raamude Dheerudai Thaatakine Champe
+Yaagame Saphalamai… Koushika Muni Ponge
+Jayaramuni Koni Aa Muni Mithilaapuri Kege
+
+Shiva Dhanuvadigo Nava Vadhuvadhigo
+Raghuraamuni Tejam… Abhayam Adhigadhigo
+Sundara Vadanam Choosina Madhuram
+Nagumoumuna Velige… Vijayam Adigadigo
+Dhanuvunu Lepe Mohana Roopam
+Pelapela Dhwanilo… Premaki Roopam
+Poomaalai Kadhile… Aa Swayamvara Vadhuve
+
+Nee Needaga Saaguninka Jaanakeeyani
+Seetha Nosage Janakudu Sree Raama Moorthy Ki
+Aa Sprshaki Aalapinche Amruta Raagame
+Raamaankithamai Hrudayam Kalige Seethaki
+Sreekaram Manoharam… Idi Veedani Priya Bandhamani
+Aajaanubaahuni Jathakoode Avani Jaatha
+Aananda Raagame Thaanaaye Hrudhimi Seetha
+
+Devulle Mechhindi… Meemundhe Jarigindi
+Vedamlaa Nilichindhi… Seetharama Katha
+Vinudi Ika Vinudee… Aa Mahime Ika Kanudee`
+  },
+  {
+    title: "🎶 Jagadhanandhakaraka",
+    preview: "https://drive.google.com/file/d/16zncExYu1cdJgNLhda6_enIvGhGjXeA-/preview",
+    lyrics: `jagadānanda kārakā
+jaya jānakī prāṇa nāyakā
+
+gaganādhipa satkulaja rājarājēśvara
+suguṇākara surasēvya bhavya dāyaka
+sadā sakala jagadānanda kārakā |
+
+amara tāraka nicaya kumuda hita paripūrṇā nagadhara surabhūja
+dadhi payōdhi vāsa haraṇa sundaratara vadana sudhāmaya vacō
+br̥nda gōvinda sānanda mā varājarāpta śubhakarānēka
+jagadānanda kārakā |
+
+nigama nīrajāmr̥taja pōṣakā nimiśavairi vārida samīraṇa
+khaga turaṅga satkavi hr̥dālayā gaṇita vānarādhipa natāṅghriyuga
+jagadānanda kārakā ||
+
+indra nīlamaṇi sannibhāpa ghana candra sūrya nayanāpramēya
+vāgīndra janaka sakalēśa śubhra nāgēndra śayana śamana vairi sannuta
+jagadānanda kārakā |
+
+pāda vijita mauni śāpa sava paripāla vara mantra grahaṇa lōla
+parama śānta citta janakajādhipa sarōjabhava varadākhila
+jagadānanda kārakā |
+
+sr̥ṣṭi sthityantakāra kāmita kāmita phaladā samāna gātra
+śacīpati nutābdi madaharā nurāgarāga rājitakadhā sārahita
+jagadānanda kārakā |
+
+sajjana mānasābdhi sudhākara kusuma vimāna surasāripu karābja
+lālita caraṇāva guṇa suragaṇa madaharaṇa sanātanājanuta
+jagadānanda kārakā |
+
+ōṅkāra pañjara kīra pura hara sarōja bhava kēśavādi rūpa
+vāsavaripu janakāntaka kalādharā kalādharāpta karuṇākara
+śaraṇāgata janapālana sumanō ramaṇa nirvikāra nigama sāratara
+jagadānanda kārakā |
+
+karadhr̥ta śarajālā sura madāpa haraṇa vanīsura surāvana
+kavīna bilaja mauni kr̥ta caritra sannuta śrī tyāgarājanuta
+jagadānanda kārakā |
+
+purāṇa puruṣa nr̥varātmaja śrita parādhīna kara virādha rāvaṇa
+virāvaṇa nagha parāśara manōhara vikr̥ta tyāgarāja sannuta
+jagadānanda kārakā |
+
+agaṇita guṇa kanaka cēla pāla viḍalanāruṇābha samāna caraṇāpāra
+mahimādbhuta sukavijana hr̥tsadana sura munigaṇa vihita kalaśa
+nīra nidhijā ramaṇa pāpa gaja nr̥siṁha vara tyāgarājādhinuta
+jagadānanda kārakā ||
+
+jaya jānakī prāṇa nāyakā
+jagadānanda kārakā |`
+  },
+  {
+    title: "🎶 Bhadra Shaila",
+    preview: "https://drive.google.com/file/d/1Vk8utG328yp8BlRr1TjLIoOO0j6Zu7aj/preview",
+    lyrics: `Bhadrasaila Rajamandira lyrics in English
+
+Raamaya rama bhadraya rama chandraya vedase
+Raghu naadhaya naadhaya seethayah pathaye namaha
+
+Badhra shaila raaja mandira
+Shree raama chandra bahu madya vilasithendriya
+Badhra shaila raaja mandira
+Shree raama chandra bahu madya vilasithendriya
+
+Veda vinutha raaja mandala Shree raama chandra
+dharma karma yugala mandala
+Veda vinutha raaja mandala Shree raama chandra
+dharma karma yugala mandala
+
+Sathatha rama dasa poshakaa Shree raama chandra
+vithatha badra giri niveshakaa
+
+Badhra shaila raja mandira Shree raama chandra
+bahu madhya vilasithendriya
+Bahu madhya vilasitendriya
+Bahu madhya vilasitendriya
+
+AaaAaaaAaaaaaa
+
+Kodhanda raama Kodhanda raama Kodhanda raampaahi Kodhanda raama
+Kodhanda raama Kodhanda raama Kodhanda raampaahi Kodhanda raama
+Needhanda Naaku Neevendhu Boku Madhela neeku Vaddhu Paraaku
+
+Kodhanda raama Kodhanda raama Kodhanda raampaahi Kodhanda raama
+
+Tallivi neeve tandrivi neeve dhaathavu neeve dhaivamu neeve
+Kodanda raama kodanda raama raama raama raama Kodanda raama
+
+Dasaradha raama govindaa mamu dhaya chudu paahi mukundaa
+Dasaradha raama govindaa mamu dhaya chudu paahi mukundaa
+Dasaradha raama govindaa
+
+Dasamukha samhaara daranija pathi raama sasidhara pujitha shanka chakra dharaa
+Dasaradha raama govinda
+
+Takkuvemi manaku ramundokkadundu varaku
+Takkuvemi manaku ramundokkadundu varaku
+Prakkathoduga bagavanthudu munu chakradhari ayi chenthane vundaga
+
+Takkuvemi manaku ramundokkadundu varaku
+Takkuvemi manaku ramundokkadundu varaku
+
+Jaya jaya rama jaya jaya rama jagadabi raama janaki raama
+Jaya jaya rama jaya jaya rama jagadabi raama janaki raama
+Jaya jaya rama jaya jaya rama jagadabi raama janaki raama
+Jaya jaya rama jaya jaya rama jagadabi raama janaki raama
+
+Paahi raama prabho paahi raama prabho paahi bhadradri vaidehi raama prabho
+Paahi raama prabho paahi raama prabho paahi bhadradri vaidehi raama prabho
+Paahi raama prabho paahi raama prabho paahi bhadradri vaidehi raama prabho
+Paahi raama prabho
+
+Sreemanmaha guna stomabhiramamee nama keerthananu varnimpu raama prabho
+Sundarakaara manmandiraakara seedetirasamyutha ananda rama prabho
+
+Paahi Raama prabho
+Paahi Raama prabho
+Paahi Raama prabho`
+  },
+  {
+    title: "🎶 Srikara Subhakara Pranava",
+    preview: "https://drive.google.com/file/d/1yhWqNm_VM_ZtW4Z_x7pFyPtvyiKILTe7/preview",
+    lyrics: `Srikara Subhakara Pranava Swarupa Lyrics in English-Trinetram
+
+Narasimhaa… Lakshmee Narasimhaa…
+
+Srikara Subhakara Pranava Swarupa Lakshmi Narasimhaa…
+Padhunaalugu Lokamulannee Mrokke Jwaalaa Narasimhaa… ||2||
+
+Neeve Saranamayyaa… O Yadagiri Narasimhaa…
+Srikara Subhakara Pranava Swarupa Lakshmi Narasimhaa…
+Padhunaalugu Lokamulannee Mrokke Jwaalaa Narasimhaa…
+
+Puraana Yugamuna Ee Giri Paine… Thapamonarinchenu Yaadha Rushi
+Dharaathalammuna Athani Perutho… Ayinadhi Ee Giri Yadagiri…
+Ee Guhalo Velasenu Pralaya Mahojwala Jwaalaa Narasimhudu
+Bhakthaa Abhishtamulanniyu Theerche Lakshmi Narasimhudu…
+
+Sukhashaanthulanu Chekoorchu Shubhayoga Narasimhudu…
+Aa Aa AAa… Aa Aaa Aaa
+Sukhashaanthulanu Chekoorchu Shubhayoga Narasimhudu…
+Namo Namah… Namo Namah
+Namaskarinchenu Naalugu Dhikkulu…
+Nakhamula Veluguku Mrokkenu Chukkalu
+Gopura Roopamu Dhaalchinadhi… Aa Dhivya Sudharshana Chakramu
+Mangala Haarathulochhinadhi Mahaa Kaala Chakramu…
+
+Srikara Subhakara Pranava Swarupa Lakshmi Narasimhaa…
+Padhunaalugu Lokamulannee Mrokke Jwaalaa Narasimhaa…
+
+Ee Swaami Paadhamunu Brahmma Kadugagaa… Vishnu Kundame Prabhavinche
+Ita Snaanamu Chesina Janmadhanyame Karma Viyochaname…
+
+Ita Vishwavaidhyudu Swamiye… Cheyunu Roga Nivaaraname
+Chitthamu Nepamu Sathvamu Gaanpu Betthamu Thaakagane…
+
+Bhogabhaagyaalu Dheergaayu Osagenu Giripradhakshinam…
+Aa Aa AAa… Aa Aaa Aaa
+Bhogabhaagyaalu Dheergaayu Osagenu Giripradhakshinam…
+
+Namo Namah… Namo Namah
+Kshetra Paalakudu Aanjaneyude… Saakshi Avunu Ee Mahimalaku
+Kaliyguga Dhaivamu Yadagiri Sree Narasimhudu Dharshanam
+Korina Korkelu Theercheti… Mahaa Kalpavrukshamu…
+
+Srikara Subhakara Pranava Swarupa Lakshmi Narasimhaa…
+Padhunaalugu Lokamulannee Mrokke Jwaalaa Narasimhaa…
+
+Bhoothapretha Pishaacha Raakshasula… Praaradrolu Nee Naamame
+Kshudrashakthulanu Baanaamathulanu… Dhadgamamachhunu Smaraname
+Prapancha Baala Prahladhuniye… Hiranyakashipudu Himsimpagane…
+
+Sarvakaalamula Sarvaavasthala Sarva Dhikkulaku Vyaapinchi
+Samrakshimpumu Narasimhaa… Anugrahimpumu Narasimhaa…
+Yadagiri Narasimhaa… Om Om Om Om…
+
+Srikara Subhakara Pranava Swarupa Lakshmi Narasimhaa…
+Padhunaalugu Lokamulannee Mrokke Jwaalaa Narasimhaa…`
+  },
+  {
+    title: "🎶 Kamaneeyam",
+    preview: "https://drive.google.com/file/d/1AhFKCLfXEtvsoXLpOPhlR4JYqU0ykIy7/preview",
+    lyrics: `Kamaneeyam kadu ramaneeyam
+Sri venkateswara kalayanam.. (2 times)
+
+Yedha loni siri nedu
+Sri devi kaaga
+Paalinchu bhavanamme bhoo devigaa
+
+Kamaneeyam kadu ramaneeyam
+Sri venkateswara kalayanam..
+
+Lagnamunandhe
+Manasu lagnamayettugaa
+Chekattavayyaa yidhigo
+Nee dheekshaa kankanam
+
+Sirula aliveniki
+Murula pooboniki
+Kattvayya swamy
+Dheekshaa kanakanam
+Adiye pendliki
+Ankuraarpanam
+
+Kamaneeyam kadu ramaneeyam
+Sri venkateswara kalayanam..
+
+Atukulu theneyu kalipi
+Anuraagamu rangarinchi ..(2 times)
+
+Peruganna perumaallaku
+Pedhavi theepi cheyare
+Annula minnala muddhuku nedu
+Alamatinchu swamy pedhavi
+Theepi cheyare
+
+Rendu nindu chandammalu
+Edutanunna samayam
+Swamy ullamandu
+Uppongenu ullasapu sandram
+Taalaleni tahatahalu
+Talapu daati Tongi cooda
+Tanaku taane jaaripoye
+Tera chelamu
+Tarali tarali taane vache
+Sumuhrthapu aashubha samayam
+
+Iddarammalu neeku chelimi unnaraya
+Appanai eenadu appaginchenaya
+Lokalakappadagu venkatadreeshudaa
+Swamy lokalakappadagu venkatadreeshudaa
+Lokuva cheyaku yinti yinthulanu
+Shrushti rakshanalone
+Drushti saaginchaka
+Ista sakulanu kuda
+Impuga choodavayya
+Impugaa..choodavayya..`
+  },
+  {
+    title: "🎶 Bharatha Vedhamuga",
+    preview: "https://drive.google.com/file/d/1gzNz81cxm4ANIZbryM6HMCsuOhdQaLzQ/preview",
+    lyrics: `Shambho Shankara
+Hara Hara Mahadeva Hara Hara Mahadeva
+Hara Hara Mahadeva Hara Hara Mahadeva
+Thaddhidhaadhim Dhimdhinee Dhwanula Thaandavakeli Thathpara
+Gourimanjulashinjini Chathura Laasya Vinodhava Shankara
+
+
+Bharatha Vedhamuga Niratha Naatyamuga Kadhilina Padhamidhi Eeshaa
+Shivanivedhanaga Avani Vedhanaga… Palikenu Padhamu Paresha
+Neelakandharaa Jaalipondharaa… Karunatho Nanu Ganaraa
+Neekantharaa Shainamandhiraa… Moravini Badhulidaraa
+Nagajaa Manoja Jadeeshwaraa… Baalendhu Shekhara Shankara
+Bharatha Vedhamuga Niratha Naatyamuga Kadhilina Padhamidhi Eeshaa
+Shivanivedhanaga Avani Vedhanaga… Palikenu Padhamu Paresha
+
+Hara Hara Mahadeva Hara Hara Mahadeva
+Hara Hara Mahadeva Hara Hara Mahadeva
+Aa AaAa……….
+Anthakaantha Ee Sakhi Agnithapthamainadhi
+menuthyaagamichhi Thaanu Neelo Leenamainadhi
+Aadhishakthi Aakruthi Athrijaatha Parvathi
+Thaanuvaina Praanadhavuni Chenthaku Cherukunnadhi
+
+Aa AaAa AaAa Aa Aa
+Bhavuni Bhuviki Tharalinchelaa… Dharani Dhivni Thalapinchela
+Rasatharangini Leela Yathini Nruthyarathuni Cheyagalige Ee Vela
+Bharatha Vedhamuga Niratha Naatyamuga Kadhilina Padhamidhi Eeshaa
+Shivanivedhanaga Avani Vedhanaga… Palikenu Padhamu Paresha
+
+
+Jangama Saavara Gangaarchithashiramrudhamandithakara Purahara
+Bhaktha Bhankara Bamadhaa Sankara Sarwaharadhakshaa Dhwarahara
+Baalavilochana Paalithajanagana Kaalakaalavishweswara
+Aashuthosha Aganaasathishaasana Jayagireesha Brihadheeshwaraa
+Hara Hara Mahadeva Hara Hara Mahadeva
+
+Vyomakesha Ninu Himagiriparasutha Premapaashamuna Piluvanga
+Yogivesha Nee Manasuna Kalagadha Raagaleshamaina
+Hey Mahesha Nee Bhayadhapadhaahathi Dhaithyaposhanamu Jarupanga
+Bhogibhoosha Bhuvanaalini Nilupava Abhaya Mudhralona
+
+
+Namaka Chamakamula Naadhaana.. Yamaka Gamakamula Yogaana
+Palukuthunna Praanaana… Pranavanaadha Pradhamanaata Shruthi Vinava
+Hara Hara Mahadeva Hara Hara Mahadeva`
+  },
+  {
+    title: "🎶 Andhari Bandhuvaya",
+    preview: "https://drive.google.com/file/d/12wXSjGtdBR8UgBYIEMMcaBF_swnydCDS/preview",
+    lyrics: `Raamaa….aa…raamaa…aa…aa
+Andari bandhuvayaa bhadhrachala raamayyaa
+andari bandhuvayaa bhadhrachala raamayyaa
+aadhukune prabhuvayyaa aa ayodhya raamayyaa
+cheyuthanichhe vadayyaa ma seetaraamayyaa
+korkelu teerche vaadayyaa kodandaraamayyaa
+
+Tellavarithe chakravartiyai rajyamunele raamayya
+tandrimatakai padavini vadili adavulakegenayaa
+mahilo janulanu yelagavachina mahaavishnu avataramayaa
+aalini rakkasudapaharinchite aakroshinchenayaa
+asuruni trunchi ammanu techi agni pareeksha vidhinchenayaa
+chakali nindaku satyamu chataga kulasatine vidanadenayaa
+na ramuni kastam lokamlo yevaru padaledayyaa
+na ramuni kastam lokamlo yevaru padaledayyaa
+satyam dharmam tyagamlo ataniki sarilerayyaa..
+karunaahrudayudu sharananuvariki abhayamosagunayyaa || Andari Bandhuvaya ||
+
+Badhrachalamu punyakshetramu antaaramamayam
+baktudu badhruni kondaga marchi koluvai unna sthalam
+paramabhaktudu ramadasu ee alayamunu kattinchenayyaa
+seetaramalakshmanulaku aabharanamule cheyinchenayaa
+panchavatini aa janaki ramula parnashala adigo
+seetaramulu jalakamuladina seshateerdhamadigo
+ramabhaktito nadigaa marina shabari idenayyaa
+ramabhaktito nadigaa marina shabari idenayyaa
+shriramapadamulu nityam kadige godavari ayyaa
+ee kshetram teerdham darshinchina janmadhanyamayyaa.`
+  },
+  {
+    title: "🎶 Rama Rama Raghu Rama",
+    preview: "https://drive.google.com/file/d/1C2V1S8ZdsDyCEJMAIT0__CnQDvycA5OT/preview",
+    lyrics: `Rama Rama Raghurama Ani Paaduthunna Hanuma
+Antha Bhakthi Paravashamaa… Oo Kanta Mammu Ganumaa
+Saradagaa Naa Gaale Paata Vinumaa
+Vinnaaka Badhulichhi Aadhukonumaa
+Gaaliki Puttaa, Gaaliki Perigaa… Achham Neelaaga
+Nithyam Neetho Unnaagaa… Iddhari Lakshanamokategaa
+AaAaAa AaAaAaa Aa… Oo OoOO Ooo Oo
+Rama Rama Raghurama Ani Paaduthunna Hanuma
+Antha Bhakthi Paravashamaa… Oo Kanta Mammu Ganumaa
+
+Ammalle Nanu Penchindhi Ee Palle Seema
+Naannalle Nadipinchindhi… Oorantha Prema
+Ammalle Nanu Penchindhi Ee Palle Seema
+Naannalle Nadipinchindhi… Oorantha Prema
+Elaa Penchukunnaa… Elaa Piluchukunnaa
+Ee Matti Sontham… Naa Chitti Janmam
+Annee Sontha Ille… Anthaa Ayinavaalle
+Ee Sneha Bandham… Naa Poorva Punyam
+Brathukantha Idhi Theere Runamaa… Aa AaAa Aaa
+
+Rama Rama Raghurama… Ani Paaduthunna Hanuma
+Antha Bhakthi Paravashamaa… Oo Kanta Mammu Ganumaa
+
+Ye Aatalaadisthaavo… Oo Kothi Bomma
+Ye Baata Choopisthaavo… Kaanunna Brahmma
+Prasannamjaneyam… Ane Naamadheyam
+Prathimanchi Kaaryam… Jaripinchu Dhaivam
+Prabhaadhivya Kaayam… Prakeerthi Pradhaayam
+Naaloni Dhairyam… Sri Anjaneyam
+Naa Vente Nuvvunte Bhayamaa… Aa Aa Aa Aaa
+
+Rama Rama Raghurama Ani Paaduthunna Hanuma
+Antha Bhakthi Paravashamaa… Oo Kanta Mammu Ganumaa
+Saradagaa Naa Gaale Paata Vinumaa
+Vinnaaka Badhulichhi Aadhukonumaa
+Gaaliki Puttaa, Gaaliki Perigaa… Achham Neelaaga
+Nithyam Neetho Unnaagaa… Iddhari Lakshanamokategaa
+AaAaAa AaAaAaa Aa… Oo OoOO Ooo Oo`
+  },
+  {
+    title: "🎶 Amma Bhavani",
+    preview: "https://drive.google.com/file/d/1cEtsQNFy2BMNY9fGayQ3-7Xiqj_NbbDL/preview",
+    lyrics: `Ohm Maha Shakthi… Ohm Shakthi Maha Shakthi
+Amma Bhavani Lokaalanele… Omkaara Roopamamma
+Thallee Nee Mahimalni Choopavamma…
+Amma Bhavani Lokaalanele… Omkaara Roopamamma
+Thallee Nee Mahimalni Choopavamma…
+
+Oo OoOo… Srushtiki Deepamaa… Shakthike Moolamaa
+Simha Rathame Needhammaa… Amma Durgammaa
+Bhakthulanu Deevinchumaa…
+Amma Bhavani Lokaalanele… Omkaara Roopamamma
+Thallee Nee Mahimalni Choopavamma…
+
+Amma Pasupu Kumkuma, Chandanamu, Paalabhishekam
+Errani Gaajulatho Puvvulatho… Ninu Kolichaamu
+
+Amma Chandaname Poosina… Ollu Choodu
+Amma Chandaname Poosina… Ollu Choodu
+Amma Punnami Puttillu… Aa Kallu Choodu
+Amma Mukkoti Merupula… Memu Choodu
+Ammamma Muggurammala… Moolaputamma
+Nee Adugule Kaalaalu…
+
+Amma Nippulni Thokkina… Nadaka Choodu
+Amma Dhikkulni Dhaatina… Keerthi Choodu
+Veyyi Soorillai Merisina… Shakthini Choodu
+Manushullo Devudee Bhakthuni Choodu
+Nee Paadha Sevaye… Maaku Punyam
+Amma Nee Choopu Sokithe… Janma Dhanyam
+
+
+Amma Bhavani Lokaalanele… Omkaara Roopamamma
+Thallee Nee Mahimalni Choopavamma…
+
+Dhinnaku Dhinnakuthaa… Dhinnaku Dhinnakuthaa
+Gala Gala Gala Gala… Gala Gala Gala Gala
+Dhinnaku Dhinnakuthaa…
+
+
+Gajjelane Katti… Damarukame Patti
+Naatyame Cheyuta… Ammaku Ishtamata
+Aa… Oore Oogela Iyyaale Haarathi
+Oore Oogela Iyyaale Haarathi
+Kaayalu Kotti… Falamulu Petti
+Paadhaalu Thaakithe…
+Adigina Varamulu Ichhunu Thalli
+
+Cheeralu Thechhaam… Rekkalu Thechhaam
+Challamgaa Andhuko…
+Jaya Jaya Shakthi… Shiva Shiva Shakthi
+Jaya Jaya Shakthi… Shiva Shiva Shakthi
+
+
+Kanchilo Kaamaakshamma…
+Madhuralo Meenaakshamma Nuvve Amma
+Kaashilo Annamoornave Maathaa…
+Srisailamlo Bhramaramba… Bejawada Kanadurgavu Nuvve Amma
+Calcutta Kaali Maathave Maathaa
+
+Narakunni Hathamaarchi… Shree Krishunni Kaachi
+Sathyabhaamai Shakthi Choopinaave…
+Naraloka Bhaaraanni… Bhoodevai Mosi
+Saatileni Sahanam Chaatinaave…
+
+Bhadhrakaali Ninnu… Shaantha Parichendhuku
+Rudhranethrundu Shivudaina… Sarithoogunaa
+Brahmmaku Medhassu… Vishnuku Tejassu
+Nee Padha Dhoolini… Thaakaga Vachhenata
+
+Brahmmaku Medhassu… Vishnuku Tejassu
+Nee Padha Dhoolini… Thaakaga Vachhenata
+Nee Padha Dhoolini… Thaakaga Vachhenata
+Nee Padha Dhoolini… Thaakaga Vachhenata`
+  },
+  {
+    title: "🎶 Okkade Devudu",
+    preview: "https://drive.google.com/file/d/1kVF4vv_6MNCFmKL_NFNj7OXQ0LPstHHd/preview",
+    lyrics: `Sab ka malik ek hai
+okkade suryudu okkade chandrudu
+okkade aa devudu
+ramude devudani kolichindi meeru
+yesu ne daivam ani thalachindi meeru
+allah ani yelugethi pilichindi meeru
+ye peru tho evaru piluchukunna
+ye theeruga evaru poojinchina
+ee chara cheraga gathi srushtinchi nadipinchu
+okkade devudu okkade devudu
+okkade aa devadevudu
+okkade aa devadevudu
+
+Bhashaya dhvajamunethi pranavaganga kalagalalanu
+hindu mathamannavu neevu
+aaku pacha kethanana chandravanka kalakalalanu
+islam annavu neevu
+siluva paina yesu rakhtha kanneellatho yedalu thadisi
+kraisthavamani annavu neevu
+boudham ani jainam ani sikhu ani
+mokkukune palu gundela palu pedala palukedaina
+ee chara cheraga gathi srushtinchi nadipinchu
+okkade devudu okkade devudu
+okkade aa devadevudu
+okkade aa devadevudu
+
+Raju peda bhedam epudu choopabodhu gaali
+adi deva devuni jaali
+pasidi medani poori gudiseni
+bhedamerigi kuriyabodhu vaana
+adi lokeshawareshwaruni karuna
+saati manavali hrudaya aalayala koluvudeeri
+unnadu aa swayam bhuvudu
+kulam ani matham ani jaathulani
+branthi vidu
+prathi aduguna thana roopame prathibimbamuga
+prathi jeevini paramatmaku prathiroopamuga
+ee chara cheraga gathi srushtinchi nadipinchu
+okkade devudu okkade devudu
+okkade aa devadevudu
+okkade devudu okkade devudu
+okkade aa devadevudu`
+  }
+];
+
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src = src + "?autoplay=1&mute=1"; // muted autoplay works
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[200,230,210,220,210,200,190];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur=songDurations[index] || 210;
+  window.endTimeout=setTimeout(nextSong,dur*1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+document.getElementById('centerPlayer').onclick=()=>nextSong();
+
+function goBack(){
+  // Use relative path for local files
+  window.location.href="anxious back.html";
+}
+function openPlaylist(){
+  window.location.href="all back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

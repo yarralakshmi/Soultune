@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SoulTune | Music for Every Emotion</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      color: #333;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 60px 20px;
+      background: radial-gradient(circle at top left, #f9e7fe, #e3f8ff, #fff7e6);
+      animation: gradientShift 12s ease infinite;
+      background-size: 300% 300%;
+      transition: 0.8s ease-in-out;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .glow {
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      filter: blur(15px);
+      animation: float 10s infinite ease-in-out;
+      transition: 0.8s ease-in-out;
+    }
+
+    .glow:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; background: #ffc9de; }
+    .glow:nth-child(2) { top: 40%; left: 70%; animation-delay: 2s; background: #b0e7ff; }
+    .glow:nth-child(3) { top: 75%; left: 25%; animation-delay: 4s; background: #ffd59e; }
+    .glow:nth-child(4) { top: 60%; left: 80%; animation-delay: 6s; background: #e8bfff; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      text-align: center;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #5a4bff, #ff69b4, #ffb347);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: 0.7s ease-in-out;
+    }
+
+    p.subtitle {
+      font-size: 1.2rem;
+      color: #555;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .top-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 40px;
+    }
+
+    .top-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(45deg, #7f7fff, #ff7fbf);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .active-btn {
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(255,255,255,0.8);
+      border: 2px solid white;
+    }
+
+    .top-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 7px 18px rgba(0,0,0,0.35);
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .emotion-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      transition: all 0.35s ease;
+      width: 100%;
+    }
+
+    .emotion-card:hover {
+      transform: scale(1.03);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .emotion-name {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .music-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .music-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: black;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .music-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+
+    /* Button Colors */
+    .happy { background: linear-gradient(45deg, #ffb347, #ffcc33); }
+    .sad { background: linear-gradient(45deg, #89f7fe, #66a6ff); }
+    .angry { background: linear-gradient(45deg, #f77062, #fe5196); }
+    .stressed { background: linear-gradient(45deg, #43cea2, #185a9d); }
+    .anxious { background: linear-gradient(45deg, #a1c4fd, #c2e9fb); }
+    .bored { background: linear-gradient(45deg, #ff9a9e, #fad0c4); }
+    .frustration { background: linear-gradient(45deg, #fddb92, #d1fdff); }
+    .lonely { background: linear-gradient(45deg, #a18cd1, #fbc2eb); }
+    .confused { background: linear-gradient(45deg, #4facfe, #00f2fe); }
+    .jealous { background: linear-gradient(45deg, #f6d365, #fda085); }
+    .fearful { background: linear-gradient(45deg, #667db6, #0082c8, #0082c8, #667db6); }
+    .guilty { background: linear-gradient(45deg, #ffecd2, #fcb69f); }
+    .exhaustion { background: linear-gradient(45deg, #cfd9df, #e2ebf0); color: #333; }
+    .overthinking { background: linear-gradient(45deg, #b3ffab, #12fff7); }
+
+    .back-btn {
+      margin-top: 60px;
+      padding: 14px 36px;
+      border: none;
+      border-radius: 35px;
+      background: linear-gradient(45deg, #4b6aff, #00b7ff);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow"></div><div class="glow"></div><div class="glow"></div><div class="glow"></div>
+
+  <h1>🎵 SoulTune: Music for Every Emotion</h1>
+  <p class="subtitle">Let your heart choose what it needs to feel better 💫</p>
+<p>Choose the one according to the data preference:</p>
+<br>
+  <div class="top-buttons">
+    <button id="btn1" class="top-btn" onclick="changeTheme(1)">High Net Usage</button>
+    <button id="btn2" class="top-btn" onclick="changeTheme(2)">Medium Net Usage</button>
+    <button id="btn3" class="top-btn" onclick="changeTheme(3)">Low Net Usage</button>
+  </div>
+
+  <div class="container">
+
+    <div class="emotion-card"><div class="emotion-name">😊 Happy</div><div class="music-buttons">
+      <button class="music-btn happy" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\happy-and-dance.html" 
+data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uL9DKYC5NeWrEzS8GZM4GSD&si=7CVuQmjWeY1uaTu-" 
+data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/happy%2bdance-beats/,MTk-K4Z3fbqIp77B1JF,A__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Dance Beats 💃</button>
+      <button class="music-btn happy" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\happy-and-feel-good.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uK-Q-biicDzUjZPxTIFqdKB&si=8hJIhW4LhgFb2xgt" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/happy%2bfeel-good/z-xltVF0WcQZmWp1Op3nVA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Feel-Good Telugu Songs 🎶
+</button>
+
+      <button class="music-btn happy" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\happy-and-motivational.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJkyNMEx4td8m3_E0UpY6rW&si=-XUrYdYy4HixZnJo" data-saavn="https://www.saavn.com/s/playlist/ad83fb46f3488e8c86eb75ec9c309f84/happy%2bmotivation/QdI8KJf-IvIzKBnAJhUU2A__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Motivational Mix 💪</button>
+
+      <button class="music-btn happy" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\happy-and-flute.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJxO2pC9AZd8U9Ld38CFMN1&si=YM7GrzAZ8toD4H2d">Peaceful Flute 🪈</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😔 Sad</div><div class="music-buttons">
+      <button class="music-btn sad" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\sad-and-piano.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uL4HQRC0LX4zjNPXDiCKDBP&si=7VLoyk6XZ-6buSfn">Healing Piano🎹</button>
+
+      <button class="music-btn sad" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\sad-and-positive.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJC_IYNJBx6I-3rh7fosYTb&si=me42cYmgAAzJD-iH" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/sad%2bpositive/A4UjVksM2pV5084vKHRj2Q__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Positive/uplifting songs💖</button>
+
+      <button class="music-btn sad" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\sad-and-spiritual.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIb30-daouB5GqrbP08gch6&si=2n-HFZubA9a2Nrka" data-saavn="https://www.saavn.com/s/playlist/ad83fb46f3488e8c86eb75ec9c309f84/sad%2bspiritual/3uIMOZhrm3zwwwnaDll-Rw__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Spiritual Reconnection✨</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😤 Angry</div><div class="music-buttons">
+      <button class="music-btn angry" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\angry-and-fire.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJPzkBdbuDf5g5C3CflB-iu&si=EnMKRvZs0MkrHglB" data-saavn="https://www.saavn.com/s/playlist/ad83fb46f3488e8c86eb75ec9c309f84/angry-%2bfire/0jFFO,Zhjil71f3QFG7QOA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Release the fire🔥</button>
+      <button class="music-btn angry" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\angry-and-cool.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uI1PKX_1l-JdU_vSscwlW_s&si=faPaimW5TSKSY41I" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/angry%2bcool/RoyYQeKwoMiP3AiNrzXpzA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Cool Down🧘</button>
+      <button class="music-btn angry" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\angry-and-spiritual.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uKS3XUnBOn0AfGVc2H_JOwo&si=roEDnPXxy6CIkjdN" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/angry%2bspiritual/af4o,k5uAzN8497ZNqIDKA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Spiritual Peace🌿</button>
+    </div></div>
+
+    <div class="emotion-card"><div class="emotion-name">😣 Stressed</div><div class="music-buttons">
+      <button class="music-btn stressed" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\stress-and-mindful.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uKa8zQtEcaC4QZmBnIj7dss&si=iSO5aCcLgOGjACqZ" data-saavn="">Mindful Meditation🎧</button>
+      <button class="music-btn stressed" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\stress-and-rain.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uKx8C5o4Qm2wOT4uixJvBCu&si=fIpjXi9SNo9sNnJr">Rain Mood🌧️</button>
+      <button class="music-btn stressed" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\stress-and-beats.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJFDrBuqPrGvdDg54RpWyfL&si=EsLFcCiFL9i_PIGv" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/stress%2bchill-lofi-beats/m8JsNMTp9S9LBU7Q54OWwg__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Chill Lofi Beats🎶</button>
+    </div></div>
+
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😰 Anxious</div><div class="music-buttons">
+      <button class="music-btn anxious" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\anxious-and-spiritual.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uKqJm5PSbKRQBrOSs5QKH4X&si=1Y5qfrJcYb-BYLZ0" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/anxious%2bspiritual/GFsdDMA,bn,j0u3fDhdBUw__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Spirutuality✨</button>
+      <button class="music-btn anxious" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\anxious-and-20.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJVhTHePoUJiShOuaCPkmhy&si=t1qsUxUM0S6UbQLM" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/anxious%2bearly-20s/TiF0RTHlMhEZmWp1Op3nVA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">🌸Early 20's World</button>
+      <button class="music-btn anxious" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\anxious-and-soft.html" 
+data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uLfxaAVuVQPLDIXmDsq9ZXS&si=1yF-J5f9dMr_6YwS" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/anxious%2bmelody/a4hpoOaeTbx613W6L-cCSw__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">💛Soft Melody Songs</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😐 Bored</div><div class="music-buttons">
+
+      <button class="music-btn bored" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\bored-and-fun.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIN_kYlPZodq_ztfZWdzU0a&si=wFkv92Oqlt_JKTVd" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/bored%2bfun/4LB0y6DC1Tt5084vKHRj2Q__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Fun Beats🎵</button>
+      <button class="music-btn bored" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\bored-and-beats.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIJCKULq73r7m-B-Jg2TlUP&si=z0pGwD2tTuHgS_6F" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/bored%2bmass-beats/Q4WcbOWXlxZLBU7Q54OWwg__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Refreshing Mass Beats 🌈</button>
+      <button class="music-btn bored" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\bored-and-90.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIdT6Xk2Pblu3WC5PQETSpF&si=hufIEA1JVjEMzwsM" data-saavn="https://www.saavn.com/s/playlist/74236ef7ad9ac1bfd95f5b7776af1192/bored%2b90/mEiTsbGnmX4L6veGnGjYOA__">90's Telugu Songs 🎶
+</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😖 Frustration</div><div class="music-buttons">
+      <button class="music-btn frustration" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\frustration-and-violin.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJhPT_-1hFS0zF5y0lGLt8I&si=GUlpyoqfU1XYwr6j">Soothing Violin 🌅</button>
+      <button class="music-btn frustration" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\frustration-and-songs.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIXBbtl63Thp5UhL8SE-vQ_&si=SvsTTetPiUm5oYhh" data-saavn="https://www.saavn.com/s/playlist/ad83fb46f3488e8c86eb75ec9c309f84/frustration-%2b-rain-songs/pzkd0zzxF9rwwwnaDll-Rw__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Cooling Rain Songs 🌧️</button>
+      <button class="music-btn frustration" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\frustration-and-beats.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uKq8BGpBoAuzGxheFpPwseo&si=nhq1oUQgeyff9iDP" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/frustration%2btelugu-beats/vsdnaPsUOsUzKBnAJhUU2A__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Telugu Beats 🌬️</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">🥺 Lonely</div><div class="music-buttons">
+      <button class="music-btn lonely" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\lonely-and-Shorts.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uLTbHR2TVpFvLYgrTlHGQpQ&si=Q53pv39Qb8ocmx-a">Shorts 💕</button>
+      <button class="music-btn lonely" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\lonely-and-love.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIqVwVel_uq7GTLP6y4QCam&si=ILkZUTCGJyhpBxb4" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/lonely%2blove/ilsbj4UcepU2DowkhAtzrw__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Acoustic Love 🎸</button>
+      <button class="music-btn lonely" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\lonely-and-songs.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uI2hr1KoXTOxA8DG8xgCCVb&si=IY-NMfJMzuQZzyqO" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/lonely%2bcalm-songs/vVpj0D55Su9AI5VmDfZSSg__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Soulful Telugu Calm Songs 🎶</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😕 Confused</div><div class="music-buttons">
+      <button class="music-btn confused" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\confuse-and-focus.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uL0BeGKtIHM6MNMiaG-LyBF&si=ofFutAY3K56Y0Lfm">Focus Music 🎯</button>
+      <button class="music-btn confused" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\confuse-and-songs.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uKmN8oHr560ZJDJeXed3-y_&si=vwRgTYbJQBSdnAj6" data-saavn="https://www.saavn.com/s/playlist/ad83fb46f3488e8c86eb75ec9c309f84/confused%2bspiritual/qCFJy0ghqb-flAdLIHj8iA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Peaceful Devotional Songs💫</button>
+      <button class="music-btn confused" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\confuse-and-booster.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uKOuXW12bQhxDDZS1TFIajG&si=oJ1CGatpoXEfM9xZ">Motivation Booster 💪</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😔 Disapoint</div><div class="music-buttons">
+      <button class="music-btn jealous" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\dis-and-boost.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uLAIMLYlFD-7YxEb_esdL5l&si=LATQj1wOBP5cJjry"  data-saavn="https://www.saavn.com/s/playlist/ad83fb46f3488e8c86eb75ec9c309f84/happy%2bmotivation/QdI8KJf-IvIzKBnAJhUU2A__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp" >Self-Confidence Boost 💫</button>
+      <button class="music-btn jealous" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\dis-and-energy.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIIQQhrORTZgaBaBo1HO0LB&si=mj4jXDgYBJhD7gn_" data-saavan="Listen to 'engry booster songs' on JioSaavn - https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/engry-booster-songs/M2j5ceLaWU8va8qgomsMOw__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp"
+ >Energy 🧘</button>
+      <button class="music-btn jealous" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\dis-and-veena.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uI_7axnhW6cWLmGundzIJyy&si=mcbriAeG0l4Z6j0Y">Soft Veena 🎶</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😨 Fearful</div><div class="music-buttons">
+      <button class="music-btn fearful" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\fear-and-flute.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJNgFExsDjfYJsJQ1n17xq8&si=yWr5wnvTHfwHyRf5">Lyrics in Flute ☀️</button>
+      <button class="music-btn fearful" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\fear-and-spiritual.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uL1wHfrE8PeVJzknH40taH7&si=nrxg9KWsjSpRPSj6" data-saavn="https://www.saavn.com/s/playlist/ad83fb46f3488e8c86eb75ec9c309f84/fear%2bspiritual/rY01tefYK2FA1WdkGhiMDg__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Spiritual🪶</button>
+      <button class="music-btn fearful" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\fear-and-folk.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uInwtcO9A3FcH9Ydgr2XSEk&si=XBTMMA_E0v36Z-35" data-saavn="https://www.saavn.com/s/playlist/74236ef7ad9ac1bfd95f5b7776af1192/fear%2bprivate/n15BdG1i9kpm4zJandeM4A__">Janapada & Private🧘</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😞 Guilty</div><div class="music-buttons">
+      <button class="music-btn guilty" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\guilty-and-love.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uLpkP5sencYDDlmXyO1-xiZ&si=oJmD79iBF9yo_Yqd" data-saavn="https://www.saavn.com/s/playlist/74236ef7ad9ac1bfd95f5b7776af1192/guilty%2blove/bHuXXIkEFdy2DeS-QqH,vg__">Love Songs 🌷</button>
+      <button class="music-btn guilty" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\guilty-and-spiritual.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uL35UOoqDAXI0nEEwbfohXY&si=A-Kg6bu9OGVNxhzg" data-saavn="https://www.saavn.com/s/playlist/74236ef7ad9ac1bfd95f5b7776af1192/guilty%2bspiritual/RM7Hb,LYpBpfHQulIAsf5w__">Spiritual Reconect 🕉️</button>
+      <button class="music-btn guilty" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\guilty-and-90.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJcY1knJ4gGfQepDl6vb1j_&si=Q3J7FPuCpL4x4fVv" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/guilty%2b90/XxLTTaVS3adYufGtEEFmDA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">90's World 🌬️</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">😩 Exhaustion</div><div class="music-buttons">
+
+      <button class="music-btn exhaustion" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\ex-and-restart.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJu2UOFry6Kn4NnKGF8Mlfr&si=KUKjpcHYZbawhQM6" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/exhausted%2brestart-booster/PTJLVjzmrfKpJ,OEBt5Zbg__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Restart Booster 🪶</button>
+      <button class="music-btn exhaustion" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\ex-and-90.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIeF6TiZEuQFWj-uAsM5xAU&si=99BOXkZr5Dz-mR3p" data-saavn="https://www.saavn.com/s/playlist/ad83fb46f3488e8c86eb75ec9c309f84/exhausted%2b90/z3iBfK6tqz6QbUI04mhbCA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">90's songs 🌻</button>
+      <button class="music-btn exhaustion" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\ex-and-love.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJSGVorR5Kx2WiNeNnN9vDn&si=8fLDaOfqWbwHcDRe" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/exhausted%2blove/cvJMRmnyC6Pb5bdQKACHDA__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Love Songs ✨</button>
+    </div></div>
+
+
+
+    <div class="emotion-card"><div class="emotion-name">🤯 Overthinking</div><div class="music-buttons">
+      <button class="music-btn overthinking" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\over-and-20.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uIPkLFRmYqAjZIiaFgSnRsh&si=LFTvSM1iajydKBp6" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/overthinking%2bearly-20s/QdOXyHjphpi5MW-661Z5Dg__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Early 20's Beats✨</button>
+      <button class="music-btn overthinking" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\over-and-shorts.html"
+ data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uJ0vnNHLLug2sy2dAQbLKVw&si=9K5rGClY0PYoX3dn">Shorts🎻</button>
+      <button class="music-btn overthinking" data-local="C:\Users\yarra\OneDrive\ドキュメント\html\music\over-and-recent.html" data-youtube="https://youtube.com/playlist?list=PLvPeMDj-K3uKBRSLa1EIYcY_xgJE96GKe&si=prOOaN8mLB0dGdma" data-saavn="https://www.saavn.com/s/playlist/185f1997d7cdba3cfd860d02a1c17d45/overthinking-%2brecent-hits/gbgVRT1hXpyAIonqf0gmcg__?referrer=svn_source=share&svn_medium=com.whatsapp&utm_source=share&utm_medium=com.whatsapp">Recent Hits💖</button>
+    </div></div>
+
+  </div>
+
+  <button class="back-btn" onclick="history.back()">⬅ Back</button>
+
+  <!-- UPDATED SCRIPT BELOW -->
+<script>
+  let selectedMode = 1; // default
+
+  function updateSaavnVisibility() {
+    document.querySelectorAll(".music-btn").forEach(btn => {
+      const saavn = btn.dataset.saavn;
+
+      // If Low Net Mode AND empty/missing Saavn link → Hide button
+      if (selectedMode === 3 && (!saavn || saavn.trim() === "")) {
+        btn.style.display = "none";
+      } else {
+        // Show again for other modes
+        btn.style.display = "inline-block";
+      }
+    });
+  }
+
+  function changeTheme(num) {
+    selectedMode = num;
+
+    document.querySelectorAll(".top-btn").forEach(btn => btn.classList.remove("active-btn"));
+    document.getElementById("btn" + num).classList.add("active-btn");
+
+    const glow = document.querySelectorAll(".glow");
+
+    if (num === 1) {
+      document.body.style.background = "linear-gradient(135deg, #ffd1ff, #c7b8ff, #ffe6ff)";
+      glow[0].style.background = "#ff88dd";
+      glow[1].style.background = "#caa6ff";
+      glow[2].style.background = "#ffc8f2";
+      glow[3].style.background = "#eca5ff";
+    }
+
+    if (num === 2) {
+      document.body.style.background = "linear-gradient(135deg, #a4f1ff, #8fd3fe, #d0f7ff)";
+      glow[0].style.background = "#7ed9ff";
+      glow[1].style.background = "#9fe1ff";
+      glow[2].style.background = "#a9f7ff";
+      glow[3].style.background = "#59d3ff";
+    }
+
+    if (num === 3) {
+      document.body.style.background = "linear-gradient(135deg, #ffe2b7, #ffcf91, #ffd9b3)";
+      glow[0].style.background = "#ffb966";
+      glow[1].style.background = "#ffd58e";
+      glow[2].style.background = "#ffc46e";
+      glow[3].style.background = "#ffb380";
+    }
+
+    updateSaavnVisibility(); // APPLY NEW HIDE/FILTER RULE HERE
+  }
+
+  // Button click behavior
+  document.querySelectorAll(".music-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      let url = "";
+
+      if (selectedMode === 1) url = btn.dataset.local;
+      if (selectedMode === 2) url = btn.dataset.youtube;
+      if (selectedMode === 3) url = btn.dataset.saavn;
+
+      if (url) {
+        if (selectedMode === 1) {
+          window.location.href = url; // open local file
+        } else {
+          window.open(url, "_blank"); // open external link
+        }
+      } else {
+        alert("No link added yet!");
+      }
+    });
+  });
+
+  // Run once on load
+  updateSaavnVisibility();
+</script>
+
+</body>
+</html>

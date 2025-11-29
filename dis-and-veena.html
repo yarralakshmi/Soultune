@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Reels</title>
+<style>
+:root{
+  --card-w: 42vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(-45deg,#3b3b98,#182848,#355c7d,#2c3e50,#243b55);
+  background-size:400% 400%;
+  animation:gradientShift 16s ease infinite;
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  position:relative;
+  width:100%;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* --- BUBBLES --- */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  border-radius:50%;
+  animation:rise 12s infinite ease-in;
+  opacity:0.8;
+  filter:blur(1px);
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.5); opacity:0;}
+}
+
+/* --- CONTAINER --- */
+.container{
+  position:relative;
+  width:100%;
+  max-width:1500px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr;
+  gap:20px;
+  align-items:start;
+  justify-content:center;
+  margin:0 auto;
+  z-index:10;
+}
+
+/* LEFT NAV */
+.left-nav{
+  height:90vh;
+  background:rgba(30,30,30,0.65);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.4);
+  backdrop-filter:blur(8px);
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#9be8ff;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+  text-shadow:0 0 8px #00bcd4;
+}
+
+/* Scrollable Song List */
+.song-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  flex:1;
+  overflow-y:auto;
+  margin-bottom:12px;
+}
+.song-list li{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.06);
+  color:#b8f3d1;
+  font-weight:600;
+  transition:background .25s ease, transform .15s ease, color .25s ease;
+}
+.song-list li:hover{
+  background:rgba(255,255,255,0.1);
+  transform:scale(1.03);
+  color:#ffd86b;
+}
+.song-list li.active{
+  background:linear-gradient(135deg,#a1c4fd,#c2e9fb,#b8f3d1);
+  color:#000;
+}
+
+/* Buttons */
+.nav-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.back-btn, .playlist-btn{
+  width:100%;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 6px 15px rgba(0,0,0,0.25);
+  transition:transform .2s ease, background .3s ease;
+  color:#000;
+}
+.back-btn{
+  background:linear-gradient(135deg,#b3ffab,#12fff7);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+.back-btn:hover, .playlist-btn:hover{
+  transform:scale(1.04);
+  filter:brightness(1.1);
+}
+
+/* CENTER PLAYER */
+.center-player{
+  height:90vh;
+  background:rgba(30,30,30,0.65);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.4);
+  backdrop-filter:blur(8px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.4rem;
+  font-weight:700;
+  color:#b2fefa;
+  text-shadow:0 2px 10px rgba(0,0,0,0.6), 0 0 10px #12fff7;
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">🌙 Veena Flow Tunes 🎶</h1>
+
+<div class="container">
+  <!-- LEFT NAV -->
+  <aside class="left-nav">
+    <h2>✨ Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+
+    <div class="nav-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- CENTER PLAYER -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+</div>
+
+<script>
+// --- Colorful soft bubbles ---
+const bubblesContainer=document.getElementById('bubbles');
+const bubbleColors=['#a0c4ff','#ffadad','#caffbf','#ffd6a5','#bdb2ff','#9bf6ff','#ffc6ff','#fdffb6'];
+for(let i=0;i<30;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*25+8;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=10+Math.random()*10+'s';
+  b.style.animationDelay=Math.random()*6+'s';
+  b.style.background=bubbleColors[Math.floor(Math.random()*bubbleColors.length)];
+  bubblesContainer.appendChild(b);
+}
+
+// --- SONGS ---
+const songs = [
+  { title: "Track 1", preview: "https://drive.google.com/file/d/197NWpIRzlDcXZ4xQQQf4supetJT-hV7b/preview" },
+{ title: "Track 2", preview: "https://drive.google.com/file/d/1rl79V5ByzzzgEyhK0s7WR51Jyu-rKJ7-/preview" },
+{ title: "Track 3", preview: "https://drive.google.com/file/d/1iFFk30vw79tXAWyRy4DzhtqCRmgWoXBx/preview" },
+{ title: "Track 4", preview: "https://drive.google.com/file/d/1YqIzqQw3JwDXtUBRmTuoBq6SSpaZAUaQ/preview" },
+{ title: "Track 5", preview: "https://drive.google.com/file/d/15yFWJQ3IqvZyd3niyYkAIa-twiE8NoR-/preview" },
+{ title: "Track 6", preview: "https://drive.google.com/file/d/1OULY8eaDZ-zr2gMzV2es6vWyLDlSwvQG/preview" },
+{ title: "Track 7", preview: "https://drive.google.com/file/d/168l7tuk2AF6rBZMSydJh5eTSjksLN1sH/preview" },
+{ title: "Track 8", preview: "https://drive.google.com/file/d/1QwRwjyRrD8aLvrsUdPWqPl6C68CoZi3F/preview" },
+{ title: "Track 9", preview: "https://drive.google.com/file/d/1ZUubTzwkvtX5qSSabKBEw4C4qCIeaMcQ/preview" },
+{ title: "Track 10", preview: "https://drive.google.com/file/d/1D_qfPRAy4_wl60nx5eIdju8ySGvTOgsi/preview" }  
+];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const centerPlayer=document.getElementById('centerPlayer');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+});
+
+let currentIndex=0;
+
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src=src+"?autoplay=1&mute=0";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  iframe.id="songFrame";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[210,240,200,230,180,210,190,200,210,220];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur = songDurations[index] || 210;
+  window.endTimeout = setTimeout(nextSong, dur * 1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-list li').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-list li[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+centerPlayer.onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="disapoint-back.html";
+}
+function openPlaylist(){
+  window.location.href="all back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

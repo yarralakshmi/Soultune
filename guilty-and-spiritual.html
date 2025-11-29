@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💃 Telugu Dance Reels — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root {
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(-45deg, 
+    #ff9a9e, #fad0c4, 
+    #fbc2eb, #a6c1ee,
+    #fcb69f, #ffecd2,
+    #cfd9df, #e2ebf0,
+    #84fab0, #8fd3f4
+  );
+  background-size: 800% 800%;
+  animation: gradientShift 16s linear infinite;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  position: relative;
+  height: 100vh;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Bubbles */
+.bubbles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
+.bubble {
+  position: absolute;
+  bottom: -100px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: rise 10s infinite ease-in;
+}
+@keyframes rise {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-120vh) scale(1.5); opacity: 0; }
+}
+
+/* Layout */
+.container {
+  position: relative;
+  width: 96%;
+  max-width: 1800px;
+  display: grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap: 24px;
+  align-items: start;
+  z-index: 10;
+}
+
+/* Left Nav */
+.left-nav {
+  height: 90vh;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+}
+.left-nav h2 {
+  color: #ffd86b;
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+.song-list {
+  list-style: none;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.song-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffd86b;
+  font-weight: 600;
+  text-align: center;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15) inset;
+}
+.song-item.active {
+  background: linear-gradient(135deg, #ffd86b, #00aaff);
+  color: #000;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.25) inset;
+}
+
+/* Buttons */
+.bottom-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+.bottom-buttons button {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  color: black;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.3s ease;
+}
+.bottom-buttons button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+.back-btn { background: linear-gradient(135deg, #89f7fe, #66a6ff); }
+.playlist-btn { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+
+/* Player */
+.center-player {
+  height: 90vh;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.iframe-wrap {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+iframe { width: 100%; height: 100%; border: 0; }
+
+/* Lyrics */
+.lyrics-panel {
+  height: 90vh;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  overflow-y: auto;
+}
+.lyrics-panel h3 {
+  color: #ffd86b;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.lyrics-block {
+  display: none;
+  white-space: pre-line;
+  color: #fff;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+.lyrics-block.active { display: block; }
+
+/* Heading */
+.heading {
+  position: fixed;
+  top: 20px;
+  right: 50%;
+  transform: translateX(50%);
+  z-index: 99;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffeb3b;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  letter-spacing: 1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container { grid-template-columns: 1fr; gap: 12px; }
+  .left-nav, .lyrics-panel { display: none; }
+  .center-player { height: calc(100vh - 36px); border-radius: 0; }
+  .heading { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="bubbles" id="bubbles"></div>
+<h1 class="heading"> 🎶 Spiritual Reconect 🕉️</h1>
+
+<div class="container">
+  <aside class="left-nav">
+    <h2>🎵 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎶 Open Playlist</button>
+    </div>
+  </aside>
+
+  <main class="center-player">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <aside class="lyrics-panel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Floating bubbles
+const bubbles = document.getElementById("bubbles");
+for (let i = 0; i < 25; i++) {
+  const b = document.createElement("div");
+  b.className = "bubble";
+  const size = Math.random() * 20 + 10;
+  b.style.width = b.style.height = size + "px";
+  b.style.left = Math.random() * 100 + "%";
+  b.style.animationDuration = 8 + Math.random() * 8 + "s";
+  b.style.animationDelay = Math.random() * 5 + "s";
+  bubbles.appendChild(b);
+}
+
+// Songs list
+
+const songs = [
+  {
+    title: "🎶 Mahalakshmi Ashtakam",
+    preview: "https://drive.google.com/file/d/1NfZ7aZMfgjTUFWon8nkvUT_n0NMD16FB/preview",
+    lyrics: `Namastestu Mahamaye Sreepeethe Surapoojithe
+Sankha Chakra Gada Hasthe Maha Lakshmi Namosthuthe || 1 ||
+
+Namasthe Garudaroodhe Kolasura Bhayankari
+Sarva Papa Hare Devi Maha Lakshmi Namosthuthe || 2 ||
+
+Sarvagne Sarva Varade Sarva Dushta Bhayankari
+Sarva Duhkha Hare Devi Maha Lakshmi Namosthute || 3 ||
+
+Siddhi Buddhi Pradhe Devi Bhukthi Mukthi Pradayini
+Manthra Moorthe Sada Devi Maha Lakshmi Namosthuthe || 4 ||
+
+Adyantharahithe Devi Adi Sakthi Mahesvari
+Yogaje yoga Sambhoothe Maha Lakshmi Namosthuthe || 5 ||
+
+Sthoola Sookshma Maharowdhre Mahasakthi Mahodhare
+Maha Pape Hare Devi Maha Lakshmi Namosthuthe || 6 ||
+
+Padmaasana Sthithe Devi Para Bramha Swaroopini
+Paramesi Jaganmathar Maha Lakshmi Namosthuthe || 7 ||
+
+Svethambharadhare Devi Nanalankara Booshithe
+Jagat Stithe Jaganmathar Maha Lakshmi Namosthuthe || 8 || 
+
+Phalasruti |
+
+Mahalakshmi Ashtakam Stotram Ya: patheth Bhakthiman Naraha
+Sarva Siddhi Mavapnothi Rajyam Prapnothi Sarvadha ||
+
+Yeka Kalam Pathem Nithyam Maha Papa Vinasanam
+Dwi Kalam Ya: Pathen Nithyam Dhana Dhanya Samanvithaha ||
+
+Thri kalam Ya:Pathen Nithyam Maha Shathru Vinasanam
+Maha Lakshmir Baven Nithyam Prasanna Varadha Subha ||
+
+ `
+  },
+ {
+    title: "🎶 Sowbhagya Lakshmi Ravamma",
+    preview: "https://drive.google.com/file/d/1IqCMjHwCS4eY2kiCZkEFmhl5RmOptGUx/preview",
+    lyrics: `Sowbhagya Lakshmi Ravamma, Amma… Aa Aa
+Sowbhagya Lakshmi Ravamma || 2 times ||
+
+Nuditi kunkuma Ravi bimbabuga
+kannula ninduga katuka velugaa || 2 ||
+
+Kanchana haaramu galamuna meriyaga
+Peetambaramula shobalu nindaga || 2 ||
+
+Sowbhagya Lakshmi Ravamma, Amma… Aa Aa
+Sowbhagya Lakshmi Ravamma || 1 ||
+
+Ninduga Karamula Bangaru Gaajulu
+Muddhuloluku Paadhammula Muvvalu ||2||
+
+Gala Gala Galamani Savvadi Cheyaga
+Sowbhaagyavathula Sevalunandhaga || 2 ||
+
+Sowbhagya Lakshmi Ravamma, Amma… Aa Aa
+Sowbhagya Lakshmi Ravamma || 1 ||
+
+Sowbhaagyamula Bangaru Thalli
+Purandhara Vitaluni Pattapurani || 2 ||
+
+Shukravarambu Poojalandhukona
+Saayamsadhyaa Shubhaghadiyalalo || 2 ||
+
+Sowbhagya Lakshmi Ravamma, Amma… Aa Aa
+Sowbhagya Lakshmi Ravamma || 1 ||
+
+Nithyasumangali Nithya Kalyani
+Bhakthajanulaku Kalpavalli || 2 ||
+
+Kamalaasanavai Karunanindagaa
+Kanakavrushti Kuripinche Thalli || 2 ||
+
+Sowbhagya Lakshmi Ravamma, Amma… Aa Aa
+Sowbhagya Lakshmi Ravamma || 1 ||
+
+Janakarajuni Muddhula Komaritha
+Ravikula Somuni Ramaneemanivai || 2 ||
+
+Saadhusajjanula Poojalandhukoni
+Shubhamulanichhedi Deevanaleeyaga || 2 ||
+
+Sowbhagya Lakshmi Ravamma, Amma… Aa Aa
+Sowbhagya Lakshmi Ravamma || 1 ||
+
+Kumkuma Shobhitha Pankajalochani
+Venkataramanuni Pattapuraani || 2 ||
+
+Pushkalamuga Sowbhaagyamunichhe
+Punyamoorthi Maayinta Velasina || 2 ||
+
+Sowbhagya Lakshmi Ravamma, Amma… Aa Aa
+Sowbhagya Lakshmi Ravamma || 3 ||
+
+`
+  },
+{
+    title: "🎶 Vaishnavi Bhargavi Vagdevi",
+    preview: "https://drive.google.com/file/d/13BhA2GSYuCfLrihfW9Zm9-jlNBrqT1gf/preview",
+    lyrics: `vaishnavi bharvagavi vaghdevi trigunatmike
+vindya vilasini varahi tripurambike
+bhavati vindyandehi
+bagavati sarvarda sadhike satyartha chandrike
+mampahi mahaniya mantratmike
+mampahi matangi mayatmike
+||vaishnavi||
+
+a pata maduramu sangeetamu anchita sangatamu
+sanchita sanketamu
+sri bharati kshira sampraptamu amruta sampatamu
+sukruta sampatamu
+sarigama swaradhuni
+saravarudhini sama sunada vinodini
+sakala kala kalyani
+suhasini sri ragalaya vasini
+mampahi makaranda mandakini
+mampahi sugunala samvardini
+||vaishnavi||
+
+alochanamrutamu sahityamu sahita hita satyamu
+sharada stanyamu
+saraswatakshara saradyamu jnana samrajyamu
+janma safalyamu
+sarasava shobhini
+sarasa lochini vani pustaka dhraini
+varnalankruta vibhava
+shalini vara kavita chintamani
+mampahi salokya samvahini
+mampahi sri chakra simhasini
+
+vaishnavi bharvagavi vaghdevi trigunatmike
+vindya vilasini varahi tripurambike
+bhavati vindyandehi bagavati
+sarvarda sadhike satyartha chandrike
+mampahi mahaniya mantratmike
+mampahi matangi mayatmike
+`
+  },
+{
+    title: "🎶 Naalugu Dikkula Nuvve",
+    preview: "https://drive.google.com/file/d/1GLUcVtykA6WKsbwvvjUqeGx73UaG_CrU/preview",
+    lyrics: `Naalugu dikkule nuvve dikkani
+Mokke naagamma
+Nee bangaru kaantula
+Challani padagala
+Deevenaliyyamma (Amma)
+
+Naalugu dikkule nuvve dikkani
+Mokke naagamma
+Nee bangaru kaantula
+Challani padagala
+Deevenaliyyamma
+
+Nammima vaariki naagula chaviti ki
+Ammavu neevamma
+Pasupu kumkuma padatulakosage
+Devata neevamma
+Maa aidavatanamuku abhayamu nichhi
+Andagaa undamma
+Challani choopula naagamma
+Maa pillaa paapalaa kaayamma
+Palleku tallivi neevamma
+Maaku todu needaga undamma
+
+Ratnaala kaantula padagala
+Bogabhaagyala nichheti tallivi
+Puttimatti puttalone tala daachukonduvammaa
+Challani choopula naagamma
+Maa pillaa paapalaa kaayamma
+Palleku tallivi neevammaa
+Maaku todu needaga undamma
+Kaasini paalake Mamu challanga kaacheve
+Chalividi naivedyamuto chintalu maapeve
+Poojalandukoo siva naagamma
+Ellavelaala talli naagamma
+Deeveniyye deva naagamma
+Daarichupave sri naagamma
+
+Naalugu dikkule nuvve dikkani
+Mokke naagamma
+Nee bangaru kaantula
+Challani padagala
+Deevenaliyyamma amma
+
+Naalugu dikkule nuvve dikkani
+Mokke naagamma (talli)
+
+Deevenaliyyammaa
+Khiraabdhi madhiyinchu velalo
+Pedda kavvapu taadugaa maarinaa
+Vanneleenu vaasuki naagadevi neesukhudai
+Vedaala naadala satyamaa
+Anni lokaala kaasisuliyamma
+Saasvata chaitanya roopamaa
+Maa sannutulanduko naagamma
+Suryude sigalo velige mani tochene
+Ningilonii merupulanni ninne choopene
+Vendikondake daari neevule
+Konda anchule nee padagale
+Loka sundari roopanive
+Antu teliyani naagasaktive
+
+Naalugu dikkule nuvve dikkani
+Mokke naagamma
+Nee bangaru kaantula
+Challani padagala
+Deevenaliyyamma (Amma)
+
+Naalugu dikkule nuvve dikkani
+Mokke naagamma (talli)`
+  },
+{
+    title: "🎶 Amma Bhavani Lokalanele",
+    preview: "https://drive.google.com/file/d/1qTMCWlxjWf6yBdmiIQpd6_ui7V-t6JHH/preview",
+    lyrics: `Ohm Shakthi Maha Shakthi… Ohm Shakthi Maha Shakthi
+Amma Bhavani Lokaalanele… Omkaara Roopamamma
+Thallee Nee Mahimalni Choopavamma…
+Amma Bhavani Lokaalanele… Omkaara Roopamamma
+Thallee Nee Mahimalni Choopavamma…
+
+Oo OoOo… Srushtiki Deepamaa… Shakthike Moolamaa
+Simha Rathame Needhammaa… Amma Durgammaa
+Bhakthulanu Deevinchumaa…
+Amma Bhavani Lokaalanele… Omkaara Roopamamma
+Thallee Nee Mahimalni Choopavamma…
+
+Amma Pasupu Kumkuma, Chandanamu, Paalabhishekam
+Errani Gaajulatho Puvvulatho… Ninu Kolichaamu
+
+Amma Chandaname Poosina… Ollu Choodu
+Amma Chandaname Poosina… Ollu Choodu
+Amma Punnami Puttillu… Aa Kallu Choodu
+Amma Mukkoti Merupula… Memu Choodu
+Ammamma Muggurammala… Moolaputamma
+Nee Adugule Kaalaalu…
+
+Amma Nippulni Thokkina… Nadaka Choodu
+Amma Dhikkulni Dhaatina… Keerthi Choodu
+Veyyi Soorillai Merisina… Shakthini Choodu
+Manushullo Devudee Bhakthuni Choodu
+Nee Paadha Sevaye… Maaku Punyam
+Amma Nee Choopu Sokithe… Janma Dhanyam
+
+Amma Bhavani Lokaalanele… Omkaara Roopamamma
+Thallee Nee Mahimalni Choopavamma…
+
+Dhinnaku Dhinnakuthaa… Dhinnaku Dhinnakuthaa
+Gala Gala Gala Gala… Gala Gala Gala Gala
+Dhinnaku Dhinnakuthaa…
+
+Gajjelane Katti… Damarukame Patti
+Naatyame Cheyuta… Ammaku Ishtamata
+Aa… Oore Oogela Iyyaale Haarathi
+Oore Oogela Iyyaale Haarathi
+Kaayalu Kotti… Falamulu Petti
+Paadhaalu Thaakithe…
+Adigina Varamulu Ichhunu Thalli
+
+Cheeralu Thechhaam… Rekkalu Thechhaam
+Challamgaa Andhuko…
+Jaya Jaya Shakthi… Shiva Shiva Shakthi
+Jaya Jaya Shakthi… Shiva Shiva Shakthi
+
+Kanchilo Kaamaakshamma…
+Madhuralo Meenaakshamma Nuvve Amma
+Kaashilo Annamoornave Maathaa…
+Srisailamlo Bhramaramba… Bejawada Kanadurgavu Nuvve Amma
+Calcutta Kaali Maathave Maathaa
+
+Narakunni Hathamaarchi… Shree Krishunni Kaachi
+Sathyabhaamai Shakthi Choopinaave…
+Naraloka Bhaaraanni… Bhoodevai Mosi
+Saatileni Sahanam Chaatinaave…
+
+Bhadhrakaali Ninnu… Shaantha Parichendhuku
+Rudhranethrundu Shivudaina… Sarithoogunaa
+Brahmmaku Medhassu… Vishnuku Tejassu
+Nee Padha Dhoolini… Thaakaga Vachhenata
+
+Brahmmaku Medhassu… Vishnuku Tejassu
+Nee Padha Dhoolini… Thaakaga Vachhenata
+Nee Padha Dhoolini… Thaakaga Vachhenata
+Nee Padha Dhoolini… Thaakaga Vachhenata`
+  },
+{
+    title: "🎶 Kousalya Supraja Rama",
+    preview: "https://drive.google.com/file/d/12m80ImWz8wYhvrmlI75WTxUXG88b9YSL/preview",
+    lyrics: `kausalya supraja rāma pūrvāsandhyā pravartatē |
+uttiṣṭha naraśārdūla kartavyaṃ daivamāhnikam ‖ 1 ‖
+
+uttiṣṭhōttiṣṭha gōvinda uttiṣṭha garuḍadhvaja |
+uttiṣṭha kamalākānta trailōkyaṃ maṅgaḻaṃ kuru ‖ 2 ‖
+
+mātassamasta jagatāṃ madhukaiṭabhārēḥ
+vakṣōvihāriṇi manōhara divyamūrtē |
+śrīsvāmini śritajanapriya dānaśīlē
+śrī vēṅkaṭēśa dayitē tava suprabhātam ‖ 3 ‖
+
+tava suprabhātamaravinda lōchanē
+bhavatu prasannamukha chandramaṇḍalē |
+vidhi śaṅkarēndra vanitābhirarchitē
+vṛśa śailanātha dayitē dayānidhē ‖ 4 ‖
+
+atryādi sapta ṛṣayassamupāsya sandhyāṃ
+ākāśa sindhu kamalāni manōharāṇi |
+ādāya pādayuga marchayituṃ prapannāḥ
+śēṣādri śēkhara vibhō tava suprabhātam ‖ 5 ‖
+
+pañchānanābja bhava ṣaṇmukha vāsavādyāḥ
+traivikramādi charitaṃ vibudhāḥ stuvanti |
+bhāṣāpatiḥ paṭhati vāsara śuddhi mārāt
+śēṣādri śēkhara vibhō tava suprabhātam ‖ 6 ‖
+
+īśat-praphulla sarasīruha nārikēḻa
+pūgadrumādi sumanōhara pālikānām |
+āvāti mandamanilaḥ sahadivya gandhaiḥ
+śēṣādri śēkhara vibhō tava suprabhātam ‖ 7 ‖
+
+unmīlyanētra yugamuttama pañjarasthāḥ
+pātrāvasiṣṭa kadalī phala pāyasāni |
+bhuktvāḥ salīla mathakēḻi śukāḥ paṭhanti
+śēṣādri śēkhara vibhō tava suprabhātam ‖ 8 ‖
+
+tantrī prakarṣa madhura svanayā vipañchyā
+gāyatyananta charitaṃ tava nāradō’pi |
+bhāṣā samagra masat-kṛtachāru ramyaṃ
+śēṣādri śēkhara vibhō tava suprabhātam ‖ 9 ‖
+
+bhṛṅgāvaḻī cha makaranda rasānu viddha
+jhuṅkāragīta ninadaiḥ sahasēvanāya |
+niryātyupānta sarasī kamalōdarēbhyaḥ
+śēṣādri śēkhara vibhō tava suprabhātam ‖ 10 ‖
+
+yōṣāgaṇēna varadadhni vimathyamānē
+ghṣālayēṣu dadhimanthana tīvraghṣāḥ |
+rōṣātkaliṃ vidadhatē kakubhaścha kumbhāḥ
+śēṣādri śēkhara vibhō tava suprabhātam ‖ 11 ‖
+
+padmēśamitra śatapatra gatāḻivargāḥ
+hartuṃ śriyaṃ kuvalayasya nijāṅgalakṣmyāḥ |
+bhērī ninādamiva bhibhrati tīvranādam
+śēṣādri śēkhara vibhō tava suprabhātam ‖ 12 ‖
+
+śrīmannabhīṣṭa varadākhila lōka bandhō
+śrī śrīnivāsa jagadēka dayaika sindhō |
+śrī dēvatā gṛha bhujāntara divyamūrtē
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 13 ‖
+
+śrī svāmi puṣkariṇikāplava nirmalāṅgāḥ
+śrēyārthinō haraviriñchi sanandanādyāḥ |
+dvārē vasanti varanētra hatōtta māṅgāḥ
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 14 ‖
+
+śrī śēṣaśaila garuḍāchala vēṅkaṭādri
+nārāyaṇādri vṛṣabhādri vṛṣādri mukhyām |
+ākhyāṃ tvadīya vasatē raniśaṃ vadanti
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 15 ‖
+
+sēvāparāḥ śiva surēśa kṛśānudharma
+rakṣōmbunātha pavamāna dhanādhi nāthāḥ |
+baddhāñjali pravilasannija śīrṣadēśāḥ
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 16 ‖
+
+dhāṭīṣu tē vihagarāja mṛgādhirāja
+nāgādhirāja gajarāja hayādhirājāḥ |
+svasvādhikāra mahimādhika marthayantē
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 17 ‖
+
+sūryēndu bhauma budhavākpati kāvyaśauri
+svarbhānukētu diviśat-pariśat-pradhānāḥ |
+tvaddāsadāsa charamāvadhi dāsadāsāḥ
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 18 ‖
+
+tat-pādadhūḻi bharita sphuritōttamāṅgāḥ
+svargāpavarga nirapēkṣa nijāntaraṅgāḥ |
+kalpāgamā kalanayā”kulatāṃ labhantē
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 19 ‖
+
+tvadgōpurāgra śikharāṇi nirīkṣamāṇāḥ
+svargāpavarga padavīṃ paramāṃ śrayantaḥ |
+martyā manuṣya bhuvanē matimāśrayantē
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 20 ‖
+
+śrī bhūmināyaka dayādi guṇāmṛtābdē
+dēvādidēva jagadēka śaraṇyamūrtē |
+śrīmannananta garuḍādibhi rarchitāṅghē
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 21 ‖
+
+śrī padmanābha puruṣōttama vāsudēva
+vaikuṇṭha mādhava janārdhana chakrapāṇē |
+śrī vatsa chihna śaraṇāgata pārijāta
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 22 ‖
+
+kandarpa darpa hara sundara divya mūrtē
+kāntā kuchāmburuha kuṭmala lōladṛṣṭē |
+kalyāṇa nirmala guṇākara divyakīrtē
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 23 ‖
+
+mīnākṛtē kamaṭhakōla nṛsiṃha varṇin
+svāmin paraśvatha tapōdhana rāmachandra |
+śēṣāṃśarāma yadunandana kalkirūpa
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 24 ‖
+
+ēlālavaṅga ghnasāra sugandhi tīrthaṃ
+divyaṃ viyatsaritu hēmaghṭēṣu pūrṇaṃ |
+dhṛtvādya vaidika śikhāmaṇayaḥ prahṛṣṭāḥ
+tiṣṭhanti vēṅkaṭapatē tava suprabhātam ‖ 25 ‖
+
+bhāsvānudēti vikachāni sarōruhāṇi
+sampūrayanti ninadaiḥ kakubhō vihaṅgāḥ |
+śrīvaiṣṇavāḥ satata marthita maṅgaḻāstē
+dhāmāśrayanti tava vēṅkaṭa suprabhātam ‖ 26 ‖
+
+brahmādayā ssuravarā ssamaharṣayastē
+santassanandana mukhāstvatha yōgivaryāḥ |
+dhāmāntikē tava hi maṅgaḻa vastu hastāḥ
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 27 ‖
+
+lakśmīnivāsa niravadya guṇaika sindhō
+saṃsārasāgara samuttaraṇaika sētō |
+vēdānta vēdya nijavaibhava bhakta bhōgya
+śrī vēṅkaṭāchalapatē tava suprabhātam ‖ 28 ‖
+
+itthaṃ vṛṣāchalapatēriha suprabhātaṃ
+yē mānavāḥ pratidinaṃ paṭhituṃ pravṛttāḥ |
+tēṣāṃ prabhāta samayē smṛtiraṅgabhājāṃ
+prajJṇāṃ parārtha sulabhāṃ paramāṃ prasūtē ‖ 29 ‖
+
+Ithi Sri Venkateswara Suprabhatam ||`
+  },
+{
+    title: "🎶 Janani Sivakamini",
+    preview: "https://drive.google.com/file/d/1rXqdWjeuxgLthr9Ad2KJxfIlVdj9zVS6/preview",
+    lyrics: `Amma … Amma …
+Janani Sivakamini Jaya Subhakarini Vijaya Rupini
+Janani Sivakamini Jaya Subhakarini Vijaya Rupini … Janani Sivakamini
+
+Ammavu Neeve Akhila Jagalaku.. ammala ganna ammavu neeve
+Ammavu Neeve Akhila Jagalaku.. ammala ganna ammavu neeve
+Nee charanamulee nammithinamma
+Nee charanamulee nammithinamma… saranamu korithi amma bhavanii…
+
+Janani Sivakamini Jaya Subhakarini Vijaya Rupini … Janani Sivakamini…
+
+Nee dari nunna tolagu bhayalu… nee dayanunna kalugu jayalu
+Nee dari nunna tolagu bhayalu… nee dayanunna kalugu jayalu
+nirathamu maku needaga nilachi
+nirathamu maku needaga nilachi.. jayamu neeyave ammaa
+jayamu neeyave amma bhavanii…
+
+Janani Sivakamini Jaya Subhakarini Vijaya Rupini … Janani Sivakamini…
+
+`
+  },
+{
+    title: "🎶 Rajarajeshwari Ashtakam",
+    preview: "https://drive.google.com/file/d/1VdGFLGNI3uSbPZAdx84eho1BdvtH3YHU/preview",
+    lyrics: `Amba shaambhavee chandramauleer amala aparna uma paarvathi
+Kaali haimavathi shiva trinayani kathyaayanee bhairavee |
+Savitri navayauvana shubhakari samraajya lakshmeepradhaa
+Chidhroopi paradevathaa bhagavathi sri rajarajeshwari || 1 ||
+
+Amba mohini devatha tribhuvani ananda sandhyaayini
+Vanee pallava paani venu muralee gana priya lolini |
+Kalyanee uduraja bimba vadana dhoom raaksha samhaarini
+Chidhroopi paradevathaa bhagavathi sri rajarajeshwari || 2 ||
+
+Amba noopura rathna kankanadharee keyoora haaraavalee
+Jaathee champaka vaijayanthi laharee thraiveyakai raanjitha |
+Veena venu vinodha mandithakaraa veeraa sane samsththithaa
+Chidhroopi paradevathaa bhagavathi sri rajarajeshwari || 3 ||
+
+Amba raudhrini badrakali bagala jwaalaa mukee vaishnavi
+Brahmanee tripuraanthaki suranutha dhedheepyamaanojwalaa |
+Chaamundaa sritha raksha phosha janani dhaakshaayani pallavi
+Chidhroopi paradevathaa bhagavathi sri rajarajeshwari || 4 ||
+
+Amba shoola dhanu: kushaang kushadhari ardhendhu bimbaadharee
+Vaaraahee madhukaitaba prasha mani vaanee rama sevitha |
+Malladh yaasura mookadhaithya thamanee maheshwari chaambika
+Chidhroopi paradevathaa bhagavathi sri rajarajeshwari || 5 ||
+
+Amba srushti vinaasha paalanakari arya visham shobhitha
+Gayathree pranavaaksharam rutharasha poornaanusandhee krutha |
+Ongaaree vinathaasuraarchithapadaa udhdhanda daithyaapaha
+Chidhroopi paradevathaa bhagavathi sri rajarajeshwari || 6 ||
+
+Amba shashvatha agamaadhi vinutha arya maha dhevatha
+Ya brahmaadhi pipeeli kaantha jananee ya vai jagan mohini |
+Ya pancha prana vaadi repa jananee ya chithkala maalinee
+Chidhroopi paradevathaa bhagavathi sri rajarajeshwari || 7 ||
+
+Amba palita bhaktaraja manisham ambashtakamyah pathet
+Ambalola katakshaveeksha lalitam aishvarya mavyahatam |
+Amba pavana mantra rajapatanat andhesamokshapprada
+Chidhroopi paradevathaa bhagavathi sri rajarajeshwari || 8 ||
+
+|| Iti Sri Rajarajeshwari ashtakam sampoornam ||`
+  },
+{
+    title: "🎶 Annapurna Ashtakam",
+    preview: "https://drive.google.com/file/d/1RspEqWMHFiKD2ol49DsNdC-tsGFCpv0W/preview",
+    lyrics: `nityānandakarī varābhayakarī saundaryaratnākarī
+nirdhūtākhilaghōrapāvanakarī pratyakṣamāhēśvarī |
+prālēyācalavaṁśapāvanakarī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 1 ||
+matha annaporneswari maatha annapurneswari
+
+nānāratnavicitrabhūṣaṇakarī hēmāmbarāḍambarī
+muktāhāravilambamānavilasadvakṣōjakumbhāntarī |
+kāśmīrāgaruvāsitāṅgarucirā kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 2 ||
+matha annaporneswari maatha annapurneswari
+
+yōgānandakarī ripukṣayakarī dharmārthaniṣṭhākarī
+candrārkānalabhāsamānalaharī trailōkyarakṣākarī |
+sarvaiśvaryasamastavāñchitakarī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 3 ||
+matha annaporneswari maatha annapurneswari
+
+kailāsācalakandarālayakarī gaurī umā śaṅkarī
+kaumārī nigamārthagōcarakarī ōṅkārabījākṣarī |
+mōkṣadvārakavāṭapāṭanakarī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 4 ||
+matha annaporneswari maatha annapurneswari
+
+dr̥śyādr̥śyavibhūtivāhanakarī brahmāṇḍabhāṇḍōdarī
+līlānāṭakasūtrakhēlanakarī vijñānadīpāṅkurī |
+śrīviśvēśamanaḥprasādanakarī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 5 ||
+matha annaporneswari maatha annapurneswari
+
+urvīsarvajanēśvarī jayakarī mātā kr̥pāsāgarī
+vēṇīnīlasamānakuntaladharī nityānnadānēśvarī |
+sarvānandakarī sadā śubhakarī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 6 ||
+matha annaporneswari maatha annapurneswari
+
+ādikṣāntasamastavarṇanakarī śambhōstribhāvākarī
+kāśmīrātrijalēśvarī trilaharī nityāṅkurā śarvarī |
+svargadvārakavāṭapāṭanakarī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 7 ||
+matha annaporneswari maatha annapurneswari
+
+dēvī sarvavicitraratnaracitā dākṣāyaṇī sundarī
+vāmē svādupayōdharā priyakarī saubhāgyamāhēśvarī |
+bhaktābhīṣṭakarī sadā śubhakarī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 8 ||
+matha annaporneswari maatha annapurneswari
+
+candrārkānalakōṭikōṭisadr̥śā candrāṁśubimbādharī
+candrārkāgnisamānakuṇḍaladharī candrārkavarṇēśvarī |
+mālāpustakapāśasāṅkuśadharī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 9 ||
+matha annaporneswari maatha annapurneswari
+
+kṣatratrāṇakarī mahā:’bhayakarī mātā kr̥pāsāgarī
+sākṣānmōkṣakarī sadā śivakarī viśvēśvaraśrīdharī |
+dakṣākrandakarī nirāmayakarī kāśīpurādhīśvarī
+bhikṣāṁ dēhi kr̥pāvalambanakarī mātānnapūrṇēśvarī || 10 ||
+matha annaporneswari maatha annapurneswari
+
+annapūrṇē sadāpūrṇē śaṅkaraprāṇavallabhē |
+jñānavairāgyasiddhyarthaṁ bhikṣāṁ dēhi ca pārvati || 11 ||
+matha annaporneswari maatha annapurneswari
+
+mātā ca pārvatī dēvī pitā dēvō mahēśvaraḥ |
+bāndhavāḥ śivabhaktāśca svadēśō bhuvanatrayam || 12 ||
+matha annaporneswari maatha annapurneswari
+
+ithi sri annapūrṇā stōtram sampoornam ||
+
+`
+  },
+{
+    title: "🎶 Aakashame Aakaramai",
+    preview: "https://drive.google.com/file/d/1GikPZOxvEtMau26hSg4eYZpVG1mEccqW/preview",
+    lyrics: `Aakasame aakaramai
+
+bhumiye vibhutiyai
+
+agniye trinetramai
+
+vayuve chalanamai
+
+jalame jagamelu
+
+mandahasamai
+
+panchabhutaadhaara
+
+prapancheswara
+
+vidhata viswanatha
+
+bhuvi vegase aa nathude
+
+sri manjunathudai
+
+Sri manjunatha nee charitam
+
+madhuram madhuram
+
+mahananda sikharam
+
+Sri manjunatha nee charitam
+
+madhuram madhuram
+
+mahananda sikharam
+
+manjunatha charitam sri
+
+manjunatha charitam
+
+Amrutam kori ksheera kadalini
+
+chiluka aavirbhavinchindi
+
+haalahalam
+
+shankaruni shankhamuna
+
+subhakara teerdamainadi visham
+
+jeevarasula rakshake
+
+sivudaye vishaniki ankusam
+
+om namah sivaya
+
+om namah sivaya
+
+Pitarula atmaku
+
+shantini kurchaga
+
+ganganu dharake taralincha
+
+tapassunu pune bhagiradhudu
+
+suraganga varaganga pralayanga
+
+egasegasi ubikubiki
+
+urukulidi horetteti
+
+adi vini alladenu bhumi
+
+kaapada raavayya swami
+
+kanulu mudani neeku o sivayya
+
+ganganapaga garvapadi rakayya
+
+tullipadake chalu chellavinka
+
+ganga verrulu telusu duku inka
+
+aduko kailasa linga
+
+dukave akasaganga
+
+Priyaganga kanulela ponge
+
+ninu mudite naa manasugipoye
+
+ahvanam ahladam sivaganga
+
+premanubandham
+
+raave siva siracharini
+
+dhanyosmi dhanyosmi swami
+
+hara vara elara sada
+
+siva brovara
+
+sakhi sati parvati
+
+priye ide sammati
+
+Shantinchara shankara
+
+aganmadhuni brovara
+
+loka kalyanamunu kori sivudu
+
+parvati kalyana varudayenu
+
+satiki tana tanuvulo
+
+sagabhagamosagi
+
+ardhanariswarudayenu
+
+nada sivudu veda
+
+sivudu natya sivudu
+
+Sri manjunatha nee charitam
+
+madhuram madhuram
+
+mahananda sikharam
+
+Sri manjunatha nee charitam
+
+madhuram madhuram
+
+mahananda sikharam
+
+manjunatha charitam sri
+
+manjunatha charitam
+
+manjunatha charitam sri
+
+manjunatha charitam
+
+`
+  },
+];
+
+// Fill playlist
+const list = document.getElementById("songList");
+const playerWrap = document.getElementById("playerWrap");
+const lyricsHolder = document.getElementById("lyricsHolder");
+const lyricsTitle = document.getElementById("lyricsTitle");
+
+songs.forEach((song, i) => {
+  const li = document.createElement("li");
+  li.className = "song-item";
+  li.textContent = song.title;
+  li.onclick = () => playSong(i);
+  list.appendChild(li);
+
+  const lyr = document.createElement("div");
+  lyr.className = "lyrics-block";
+  lyr.textContent = song.lyrics;
+  lyricsHolder.appendChild(lyr);
+});
+
+function playSong(i) {
+  document.querySelectorAll(".song-item").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".lyrics-block").forEach(el => el.classList.remove("active"));
+  list.children[i].classList.add("active");
+  lyricsHolder.children[i].classList.add("active");
+  lyricsTitle.textContent = songs[i].title + " Lyrics";
+  playerWrap.innerHTML = `<iframe src="${songs[i].preview}?autoplay=1" allow="autoplay"></iframe>`;
+}
+
+function goBack(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/guilty%20back.html";
+}
+function openPlaylist(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html";
+}
+// Auto play first song
+playSong(0);
+</script>
+</body>
+</html>

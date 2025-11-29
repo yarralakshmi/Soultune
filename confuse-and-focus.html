@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Reels</title>
+<style>
+:root{
+  --card-w: 42vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+html,body{
+  height:100%;
+  overflow:hidden; /* ✅ Completely removes all scrollbars */
+}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(-45deg,#ff9a9e,#fad0c4,#a1c4fd,#c2e9fb,#fbc2eb,#a6c1ee,#fddb92,#d1fdff);
+  background-size:400% 400%;
+  animation:gradientShift 14s ease infinite;
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  position:relative;
+  width:100%;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* --- BUBBLES --- */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.3);
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* --- CONTAINER --- */
+.container{
+  position:relative;
+  width:100%;
+  max-width:1500px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr;
+  gap:20px;
+  align-items:start;
+  justify-content:center;
+  margin:0 auto;
+  z-index:10;
+}
+
+/* LEFT NAV */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.55);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.35);
+  backdrop-filter:blur(8px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#ffe27d;
+  text-align:center;
+  margin-bottom:14px;
+  font-size:1.2rem;
+  letter-spacing:0.5px;
+  text-shadow:0 0 8px rgba(255,255,255,0.3);
+}
+
+/* Make only the song list scrollable */
+.song-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  flex:1;
+  overflow-y:auto;
+  margin-bottom:12px;
+  scrollbar-width:none; /* ✅ hides scrollbar in Firefox */
+}
+.song-list::-webkit-scrollbar{display:none;} /* ✅ hides scrollbar in Chrome/Edge */
+
+.song-list li{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.08);
+  color:#ffd86b;
+  font-weight:600;
+  transition:all .25s ease;
+  border-left:4px solid transparent;
+}
+.song-list li:nth-child(odd){color:#90ee90;}
+.song-list li:nth-child(even){color:#87cefa;}
+.song-list li:hover{
+  background:rgba(255,255,255,0.15);
+  transform:scale(1.05);
+  border-left:4px solid #fff;
+}
+.song-list li.active{
+  background:linear-gradient(135deg,#ffd86b,#00aaff,#ff77c0);
+  color:#000;
+  box-shadow:0 0 15px rgba(255,255,255,0.5);
+}
+
+/* Buttons at the bottom */
+.nav-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+
+.back-btn, .playlist-btn{
+  width:100%;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 6px 15px rgba(0,0,0,0.25);
+  transition:transform .2s ease, background .3s ease;
+  color:#000;
+}
+.back-btn{
+  background:linear-gradient(135deg,#a1ffce,#faffd1);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+.back-btn:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 12px #a1ffce;
+}
+.playlist-btn:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 12px #fcb69f;
+}
+
+/* CENTER PLAYER */
+.center-player{
+  height:90vh;
+  background:rgba(0,0,0,0.55);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.35);
+  backdrop-filter:blur(8px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.6rem;
+  font-weight:700;
+  color:#ffeb3b;
+  text-shadow:0 0 15px rgba(0,0,0,0.6), 0 0 25px #ffd700;
+  letter-spacing:1.2px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">Focus Music 🎶</h1>
+
+<div class="container">
+  <!-- LEFT NAV -->
+  <aside class="left-nav">
+    <h2>💫 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+
+    <div class="nav-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎶 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- CENTER PLAYER -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+</div>
+
+<script>
+// --- Bubbles animation ---
+const bubblesContainer=document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// --- SONGS ---
+const songs = [
+  { title: "Track 1", preview: "https://drive.google.com/file/d/1xIQZmQYrJX1pg5G_VKNAZY3LmHgj5I7U/preview" },
+  { title: "Track 2", preview: "https://drive.google.com/file/d/1ikwlkf95zhN_VRbQR82rWL2G3zdi91Ri/preview" },
+{ title: "Track 3", preview: "https://drive.google.com/file/d/1by5lguaqKhpf4dIHVzD3kOHd-zBk74-O/preview" },
+{ title: "Track 4", preview: "https://drive.google.com/file/d/1JJzjNG30Xc8pPn9vvYiXale9M-qjmBha/preview" },
+{ title: "Track 5", preview: "https://drive.google.com/file/d/1lnsEUFM9SVsivuh40TvaQ15mJWk_v6Ik/preview" },
+{ title: "Track 6", preview: "https://drive.google.com/file/d/1SEfWTP6_VnkiSu5BUo8SeRznxnc3xG72/preview" },
+{ title: "Track 7", preview: "https://drive.google.com/file/d/1qfbuBoO0p0rTD4fYhDGurhc1xgdizjqp/preview" },
+{ title: "Track 8", preview: "https://drive.google.com/file/d/1WkPr27AWRs8kHJc8tToEfF8Vri_afyyJ/preview" },
+{ title: "Track 9", preview: "https://drive.google.com/file/d/1vpNPoVb9FoPX1xrYPOFqgLyuOqAuoOf1/preview" },
+{ title: "Track 10", preview: "https://drive.google.com/file/d/1cyvlUj-_2ERS1hUbXuv_NcAg7MQ-E7B0/preview" },
+];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const centerPlayer=document.getElementById('centerPlayer');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+});
+
+let currentIndex=0;
+let playerFrame;
+
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src=src+"?autoplay=1&mute=0";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  iframe.id="songFrame";
+  playerWrap.appendChild(iframe);
+  playerFrame=iframe;
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[210,240,200,230,180,210,190,200,210,220];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur = songDurations[index] || 210;
+  window.endTimeout = setTimeout(nextSong, dur * 1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-list li').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-list li[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+centerPlayer.onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/confused%20back.html";
+}
+function openPlaylist(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

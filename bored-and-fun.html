@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root{
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(135deg,#60a5fa,#a78bfa,#f472b6);
+  background-size:300% 300%;
+  animation:gradientShift 10s ease-in-out infinite alternate;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  100%{background-position:100% 50%}
+}
+
+/* Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.3);
+  border-radius:50%;
+  animation:rise 12s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%;
+  max-width:1800px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.25);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(14px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#f9a8d4;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.15);
+  color:#a5f3fc;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.25);
+  box-shadow:0 0 8px rgba(255,255,255,0.2) inset;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#a5f3fc,#c084fc,#f9a8d4);
+  color:#000;
+  box-shadow:0 0 12px rgba(255,255,255,0.3) inset;
+}
+
+/* Buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, box-shadow 0.3s ease;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 14px rgba(0,0,0,0.4);
+}
+.back-btn{
+  background:linear-gradient(135deg,#a5f3fc,#c084fc);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#f9a8d4,#c084fc);
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(255,255,255,0.08);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.45);
+  backdrop-filter:blur(14px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics panel */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(255,255,255,0.1);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(14px);
+  overflow:auto;
+}
+.lyrics-panel h3{
+  color:#a5f3fc;;
+  text-align:center;
+  margin-bottom:8px;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#fdfdfd;
+  line-height:1.6;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.5rem;
+  font-weight:700;
+  color:#a5f3fc;
+  text-shadow:0 0 20px rgba(255,255,255,0.6);
+  letter-spacing:1px;
+  animation:glow 3s infinite alternate;
+}
+@keyframes glow {
+  from { text-shadow: 0 0 10px #c084fc, 0 0 20px #f9a8d4; }
+  to { text-shadow: 0 0 25px #a5f3fc, 0 0 45px #c084fc; }
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">🎶 Fun Beats</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🔥 Playlist (11)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Video Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Lyrics Sidebar -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Animated bubbles
+const bubblesContainer = document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// SONG DATA
+const songs = [
+  { title: "🎵 mama Kaalipothundhi", preview: "https://drive.google.com/file/d/19ZKxrp5ghiNyVr_iCkRedty2ubZWVidj/preview", lyrics: `Mamaa 
+aaa
+Kaalipothundhii 
+Ekkada
+Mandipothundi..
+Elagaa..
+Chudava
+Chusthanu
+mamaa 
+aa
+kaalipothundhi
+gabhi gubhi
+na lovu kaalipothundhi mamoo Gunde Jarithundhi
+Maama
+Kaalipothe Kaalipooni maamo
+Gunde Jaaranivaku Maama
+Naa Gunta Call Chesindhi Maamo 
+Naa Gaali Thesesindhi 
+Maama
+Bhadhapadaku Bhadhapadaku
+Maamo Neeku Gaali BUgga Konistha 
+Maama
+Mamaa Kaalipothundhi
+Ekkada
+Mandipothundi..
+Elagaa..
+Chudava
+Gabhi Gubhi` },
+ { title: "🎵 Naidolintikada", preview: "https://drive.google.com/file/d/1DhWrZiVZdo4YHdbeNld7B5OF0MVOKhQi/preview", lyrics: `Naidorintikada nalla thumma chettukaada 
+Naidu em annade pilla 
+Abba entha vinthagunnade pilla 
+Naidorintikada nalla thumma chettu kaada 
+Nalukollu  ichade naayudu 
+Abba gunde jallumannade pinni 
+Karanam gari intikaada kaaru munaga chettu kaada 
+Kaamudem annade pilla oho kaamudem annade pilla 
+Karanam gari intikaada kaaru munaga chettu kaada 
+Kaasulaperu isthaannadamma 
+Oh Kaasulaperu isthaannadamma 
+Munasub gari intikaada mundara darawaju kaada 
+Athadem annade pilla oho Athadem annade pilla 
+Munasub gari intikaada mundara darawaju kaada 
+Mukkupudalu isthannadamma Mukkupudalu isthannadamma 
+
+Munthantha koppu meda Moodu chemanthi poolu 
+Eh raaju pettade pilla Abba entha chakkagunnave pilla 
+Chemanthi poovulu chengulona thaanetti 
+Korikori pilichede naidu 
+Abba gunde dada dadalade pinni 
+Kasulaperu esukoni kaalavagattu eluthunte 
+Paani pattu pattade naidu 
+Abba gunde jallumannade pinni 
+Mayamma thammulu maaku mena maamalu 
+Goppa godula vaaru kirru cheppula vaaru 
+Chethi karrala vaaru vaara kannula vaaru 
+Vayyari nadaka vaaru ye kovanunnaramma 
+pamitesuko panchathilo manchamesuko 
+vaakitlo deepamettu raakapothe kekesuko` },
+
+{ title: "🎵 College canteen", preview: "https://drive.google.com/file/d/1tiqwBmG0IqQo3FU89lkv3f_Qc_uxiE1t/preview", lyrics: `College Canteen-U Anteney
+Prema Pakshulaku Heaven-U
+
+Teenage Lovevu Ku Tea Coffeelu
+Andhinche Colorful Lu Station-U
+
+College Canteen-U Anteney
+Prema Pakshulaku Heaven-U
+
+Teenage Lovevu Ku Tea Coffeelu
+Andhinche Colorful Lu Station-U
+
+Corner-U Table Pai Mama
+Kallallo Kalletti Thaagesthu Prema
+
+Time Pass-U Chestharu Mama
+Love Lona Pass Aypotharu Mama
+
+Atu Choodu Aa Kallajodu Sinnodu
+Atu Choodu Aa Kallajodu Sinnodu
+Aa Mundhu Aa Neeli Kalla Sinnadhi
+Aa Mundhu Aa Neeli Kalla Sinnadhi
+Nadi Madhyalo Okkate Okka Cool Drink
+Ye Ye Ye
+Nadi Madhyalo Okkate Okka Cool Drinku
+Unnadhante Bandi Pattalekki Natte
+
+College Canteen-U Anteney
+Prema Pakshulaku Heaven-U
+
+Teenage Lovevu Ku Tea Coffeelu
+Andhinche Colorful Lu Station-U
+
+Kadhilindhi Nee Naava Jagartha Mama
+Kadhilindhi Nee Naava Jagartha Mama
+Samudhramantha Lothaindhi Prema
+Samudhramantha Lothaindhi Prema
+Alalenni Yedhuraina Nee Dhaari Lona
+Vadhaloddhu Aa Cheiyi Yedhi Yemyna` },
+
+{ title: "🎵 Changu Bhala", preview: "https://drive.google.com/file/d/1DzxvfZTTkICcusnp7hWzmkfDkX6Ecy3F/preview", lyrics: `With The Rhythm… In Your Feet
+And The Music In Your Soul
+Lift Your Hands To The Sky, And Say Ganesha
+He’s Your Friend… When You Need
+He’s The Magic… In Your Beat
+Lift Your Hands To The Sky, And Say Ganesha
+
+Nene Nenaa… Vere Evaronaa
+Nene Unna… Sandhehamlonaa
+Naa Endamaavi Daarullo… Navvulu Poose
+Naa Rendukalla Veedhullo… Vennela Kaase
+Naa Gunde Chudu Tholisaari Ganthulu Vese
+Aa Ninnallo Monnallo… Kalalanni Sadi Chese
+
+Changubhala Changubhala… Changubhala Ilaaga
+Nenu Ela Maaripoya… Chengumani Bhalegaa
+Changubhala Changubhala… Changubhala Ilaaga
+Nenu Ela Maaripoya… Chengumani Bhalegaa
+Yavvaname Thurrumani… Paaripoye Thuneega
+Thirigi Vachhe Nijamgaa…
+Nene Nenaa… Vere Evaronaa
+Nene Unna… Sandhehamlonaa
+
+Intha Goppaguntundha Jeevitham… Indhradhanusu Merisinattugaa
+Thirigivachhi Cherukunte Naa Gatham… Telusukontondhi Manasemo Melamellagaa
+Oohalanni Kilakilamantu Egurutunnayi… Sankellu Theginattuga
+Gundepaata Gonthuni Dhaati… Pedavula Teegalapai Mogenuga
+Ennenno Swaralugaa…
+
+Changubhala Changubhala… Changubhala Ilaaga
+Nenu Ela Maaripoya… Chengumani Bhalegaa
+Changubhala Changubhala… Changubhala Ilaaga
+Nenu Ela Maaripoya… Chengumani Bhalegaa
+Yavvaname Thurrumani… Paaripoye Thuneega
+Thirigi Vachhe Nijamgaa…
+
+
+Lokamantha Kottha Kotthagundhigaa… Poola Chettu Dhulipinattugaa
+Ee Kshanaanni Pattukunta Gattigaa… Thalli Veluthunte Aapese Pasipaapala
+Theeriponi Saradhalanni… Thanivi Theerela Theerchesukovaalika
+Aasalanni Dosita Nimpi… Seethakokaluga Vadhilesthe
+Aanandham Veru Kadha…
+
+Changubhala Changubhala… Changubhala Ilaaga
+Nenu Ela Maaripoya… Chengumani Bhalegaa
+Changubhala Changubhala… Changubhala Ilaaga
+Nenu Ela Maaripoya… Chengumani Bhalegaa
+Yavvaname Thurrumani… Paaripoye Thuneega
+Thirigi Vachhe Nijamgaa…
+
+
+With The Rhythm… In Your Feet
+And The Music In Your Soul
+Lift Your Hands To The Sky, And Say Ganesha
+He’s Your Friend… When You Need
+He’s The Magic… In Your Beat
+Lift Your Hands To The Sky, And Say Ganesha` },
+
+{ title: "🎵 AA Rojullu Malli Raavu", preview: "https://drive.google.com/file/d/1cmPfv7UHGFIefbiE7kkmbLTljEb3D3TS/preview", lyrics: `Raadhe Raadhe Alupantu Raadhe
+Aadesthunna Prathi Poote
+Vaadu Veedu Ani Thedale Leve
+Oo Chote Cheri Aadaame
+
+Amma Nannalni Yentho Visiginchi
+Maate Vinadanta Vayase
+Ipude Gurthosthe Anni Vadhilesi
+Maa Gunde Thirigedhaachote
+
+Arerey Baalyam Rammanna Raadhe
+Gurthukosthe Kanta Chemma
+Pettisthuntundhe
+Snehaalee..
+Gunde Meeda Vesipoye Pacchabottele
+
+Aa Rojulu Malli Raavu
+Ee Rojullaa Kaane Kaavu
+Anthe Leni Anandhaalu
+Vente Vasthe Anthe Chaalu
+Aa Rojulu Malli Raavu
+Ee Rojullaa Kaane Kaavu
+Anthe Leni Anandhaalu
+Vente Vasthe Anthe Chaalu
+
+Sontha Oorilo Kanna Vaaritho
+Unte Verele Manasantha Haayele
+Antha Maarina Saati Raavule
+Ammamma Iche Vandhake
+
+Cheppalante Enthunna Lone
+Dhaasthaam Maa Prema
+Baite Pette Dhairyaale Levu Le
+Maalo Maake Ennunna
+Cheyyi Vesthe Maa Meeda
+Evvarnainaa Tanneti Theerule
+
+Rojukosaare Gurthosthe Maa Oore
+Mounamga Aagipoye Manase
+Maaripoyele Nedu Aa Daare
+Aa Naati Maaye Yemaaye
+
+Devudu Kanipinchi
+Em Kaavali Ani Ante
+Malli Veltham
+Memantha Chinna Naatike
+
+Aa Rojulu Malli Raavu
+Ee Rojullaa Kaane Kaavu
+Anthe Leni Anandhaalu
+Vente Vasthe Anthe Chaalu
+Aa Rojulu Malli Raavu
+Ee Rojullaa Kaane Kaavu
+Anthe Leni Anandhaalu
+Vente Vasthe Anthe Chaalu` },
+{ title: "🎵 Jingidi Jingidi", preview: "https://drive.google.com/file/d/1OoRUMpaa7_DNVE0XehZ-wpLmQ-kWm2yJ/preview", lyrics: `Thaagubothu Maharajulandhariki Peru Peruna Namaskaram
+This Matter Is, Jujujuju
+Dheeni Ardhamentante..?
+Baadhalu Marchipovataaniki, Peethallaa Thaaguthunnaarukaani
+Lopala Liver Dhobbuthundhani Aarogyam Sheddukelthundani
+Zindagi Barbaadh Ayipothundhani, Asalu Thelusukore
+Jeevithamante Cinema Kaadhuraa Ayyaa
+Pratheedhi Sensor Board Choosukovataaniki
+
+Dhoomapaanam Madhyapaanam Maa Cheddadhi Raa Abbaayi
+Ani Entha Cheppinaa Vinare..!
+Meelaantollakosame Yamudu Pakka SeatU Ready Gaa Undhi
+Bayaledherandi Bayaledherandi
+Abbe Maaku Theldhu Mari Antaaraa..!
+Thaagandi Oogandi… Mee Chaavu Meeru Chaavandraa… Nee Ya–
+
+
+Quarteru Bottle-U Jaanedunnaa Matter Boledundhi
+Maatalu Botthigaa Raanodichetha Paatalu Paadisthundhi
+Dheenini Minchina Swargamannadhi
+Swargamulo Koodaa Undadhannadhi
+Cheerakattina Chilakalaaga Chilled Beer Pongi Porale
+Kannu Kotti Pilavagaane Manasu Egire
+
+Jingidi Jingidi Jingidi Jingidi Jingidi Jingidi Jingidi (x4)
+
+Heyy..! Pirikodikainaa Dhairyamosthadhi
+Pedhodikainaa Pandagosthadhi… Pichhodikainaa Gnanamosthadhi
+Mandhulone Mandhulone
+Dheenini Minchina Yogamundadhe… Dheeniki Thaggani Rogamundadhe
+Lokaanni Madichi Pettukunnadhe
+Indhulone Indhulone
+
+
+Cool-U Cool-U Dude Ni… Kootiki Leni Vaanni
+Cheers Kotti Kalapadhaa Mandhu Maharani
+Moosina Shutteru Etthakapothe Palikisthaa Padanisa
+Mera Naam Any Center Single Hand Ganeshaa
+
+Thaluku Beluku Thassaadhiyya… Kikku Kikku Kikku
+Thappuledhu Chethuletthi… Mokku Mokku Mokku
+Thaluku Beluku Thassaadhiyya… Kikku Kikku Kikku
+Thappuledhu Chethuletthi… Mokku Mokku Mokku
+
+
+Jingidi Jingidi
+Jingidi Jingidi Jingidi Jingidi Jingidi Jingidi Jingidi (x4)` },
+{ title: "🎵 Single Kingulam", preview: "https://drive.google.com/file/d/1nfJoLnlt_sfCsUH8JTJpDwqVbsRHhkSm/preview", lyrics: `Ayyo Paapam Chude Paapa…
+Nee Sommen Podde Tuna Chepa
+Abbailante Plastic Cupaa…
+Maa Hero Kanna Nuvvem Goppa
+
+Hey, Single Kingulam…
+Thella Thellagunna Taj Mahal Ki
+Rangulesi Rachha Lepe Gabbar Singulam…
+
+Meme Single Kingulam… Meeru Mingle Aithe…
+Swingulona Ringu Petti
+Gunde Doche A1 Dongalam…
+
+Single Kingulam
+Ayyo Papam Choode Paapa..
+
+Single Kingulam
+Nee Somme Podde Tuna Chepa…
+Single Kingulam
+Abbailante Plastic Cupaa..
+
+Single Kingulam
+Maa Hero Kanna Nuvvem Goppa..
+
+Single Kingulam… Single Kingulam.
+
+Ammayilante Tablets-Aa… Maa Heart Ye Meeku Omlet-Aa
+Ammayilante Tablets-Aa… Maa Heart Ye Meeku Omlet-Aa
+
+Thana Colour Kaastha Ekkuvemo
+Parledhu Baasu
+Skinnu Kandhakunda Chusukunta
+Neekenti Laasu
+
+Thala Pogaru Kuda Masthugundhi.. Adhega Maasu..
+Maa Chevulalona Pettaku Bro Cauliflowersu.
+
+Thanu Pakkanunte Enda Kuda
+Avuthadhi Manchu
+Aalayya Soodu Etunnado
+Soundu Thagginchu
+
+Thana Peru Meeda Rasestha RK Beachu…
+Vizagollu Thantharemo Aapeyyi Speechu…
+
+Hey, Sotta Buggala Lavanya
+Ninnu Love Chesthane Laavayina
+Nenosthane Edhemaina
+Dhaarlo Traffic Jam Ayina
+
+Ne Puvvunautha Jallona
+Baarathu Undi Chalo Na
+Naa Gunde Neeku Pillow Na
+Nuv Kallokosthe Thillana
+
+Hey Single Kingulam
+Thella Thellagunna Taj Mahal Ki
+Rangulesi Rachha Lepe Gabbar Singulam
+Meme Single Kingulam
+Meeru Mingle Aithe Swingulona
+Ringu Pette Gunde Doche A1 Dongalam
+
+Single Kingulam
+Ayyo Papam Choode Papa
+Single Kingulam
+Ne Somme Podde Tuna Chepa
+Single Kingulam
+Abbailante Plastic Cup Aa
+Single Kingulam..
+Maa Hero Kanna Nuvvem Goppa
+
+Love Antene Trashu Ra
+Migiledhi Inka Ashu Ra
+
+Chusi Chudangane Modhalaindhi Resu
+Life Golu Okkate… Ne Pakkana Plesu
+Neetho Techhave… Na Happy Desu
+Nenu Empty Glass-u… Nuv Fruit Juice-u
+
+Mind Ni Vadhalanandhe
+Nee Crazy Thought-u
+Blind Ga Achhayindhe
+Baby Ne Tattoo
+
+Osi Na Muddhula Parrat-u
+Vestha Diamond Locket-u
+Kattukunte Ne Life Ye Settu
+Idhi Nee Babu Meedhottu
+
+Arre Elagola Set Ayipodham
+Raave Sompaapidi
+Ne Champalu Thake
+Jhumki Laaga Maaripotha Nenu Ready
+
+Raave Naa Wonder Woman…
+Chesey Naa Intini Heaven
+Nene Ne iPhone 11.. Nokkave Subscribe Button
+
+Aduge.. Vesthe.. Goduge.. Padatha..
+Aduge Vesthe… Goduge Padatha
+Aduge Vesthe… Goduge Padatha
+Aduge Vesthe… Goduge Padatha
+
+Single Kingulam… Meme Single Kingulam
+Single Kingulam… Meme Single Kingulam` },
+{ title: "🎵 gaaju Vaaka Pilla", preview: "https://drive.google.com/file/d/1yz0miXxzwCQ0yHrH_SA6QMI2a5xRLQUE/preview", lyrics: `Aha..! Ore Venkateshu..!
+Ilaa Aey Raa Dharuvu…
+Adhi Alaa Kottu…
+Abbabbabbabbaa Emundhiraa…! Adhi Eskoraa..!
+1..2..Idhigo Paata… 4
+
+Gajuvaka Pillaa Mem Gajulollo Gaadhaa…
+Gajuvaka Pillaa Mem Gajulollo Gaadhaa…
+Gajuvaka Pillaa Mem Gajulollo Gaadhaa… Nee Seyyi Saapaledha..!
+Nee Seyyi Saapaledha… Maa Gaaju Thodagaledha…
+
+Gajuvaake Pillaa Maadhi… Gaajulollame Pillaa Memu
+Gajuvaake Pillaa Maadhi… Gaajulollame Pillaa Memu
+
+Sabbavaram Pillaa Mem Sabbulollam Gaadhaa…
+Sabbavaram Pillaa Mem Sabbulollam Gaadhaa…
+Sabbavaram Pillaa Mem Sabbulollam Gaadhaa… Nee Veepu Soopaledhaa..!
+Nee Veepu Soopaledhaa… Maa Sabbu Ruddhaledahaa…
+
+Sabbavarame Pillaa Maadhi… Sabbulollame Pillaa Memu
+Sabbavarame Pillaa Maadhi… Sabbulollame Pillaa Memu
+
+Siripuram Pillaa… Mem Seeralollam Gaadhaa…
+Siripuram Pillaa… Mem Seeralollam Gaadhaa…
+Siripuram Pillaa… Mem Seeralollam Gaadhaa… Nee Seera Ippaledha..!
+Nee Seera Ippaledha… Maa seera Suttaledhaa
+
+Siripuram Pillaa Maadhi… Seeralollame Pillaa Memu
+Siripuram Pillaa Maadhi… Seeralollame Pillaa Memu
+
+Muvvalapaalem Pillaa… Mem Muvvalollam Gaadhaa
+Muvvalapaalem Pillaa… Mem Muvvalollam Gaadhaa
+Muvvalapaalem Pillaa… Mem Muvvalollam Gaadhaa… Nee Kaalu Saapaledha..!
+Nee Kaalu Saapaledha… Maa Muvva Kattaledhaa…
+
+Muvvalapaaleme Pillaa Maadhi… Muvvalollame Pillaa Memu
+Muvvalapaaleme Pillaa Maadhi… Muvvalollame Pillaa Memu` },
+{ title: "🎵 AA Gattununtava", preview: "https://drive.google.com/file/d/1D_qJKhgIptrkUyD1McZ3awblpXNBa757/preview", lyrics: `Aa Gattununtaavaa Naganna… Ee Gattukosthaavaa
+Aa Gattununtaavaa Naganna… Ee Gattukosthaavaa Naaganna
+
+Ye… Aa Gattununtaavaa Naganna… Ee Gattukosthaavaa
+Aa Gattununtaavaa Naganna… Ee Gattukosthaavaa
+Aa Gattunemo Seesaadu Saara Undhi… Kundedu Kallu Undhi
+Buddedu Brandhi Undhi
+Ee Gattunemo Munthadantha Majjigundhi
+Aa Gattununtaavaa Naganna… Ee Gattukosthaavaa… Heyy
+Aa Gattununtaavaa Naganna… Ee Gattukosthaavaa… Heyy
+
+Aa Dhibbanuntaavaa Naganna… Ee Dhibbakosthaavaa… Heyy
+Aa Dhibbanuntaavaa Naganna… Ee Dhibbakosthaavaa… Heyy
+Aa Dhibbanemo… Thodella Dhandu Undhi
+Nakkaala Mooka Undhi… Pandhikokkula Gumpu Undhi
+Ee Dhibbanemo Govula Mandha Undhi
+Aa Dhibbanuntaavaa Naganna… Ee Dhibbakosthaavaa… Heyy
+Aa Dhibbanuntaavaa Naganna… Ee Dhibbakosthaavaa… Heyy
+
+Aa Gadapanuntaavaa Naganna… Ee Gadapakosthaavaa… Heyy
+Aa Gadapanuntaavaa Naganna… Ee Gadapakosthaavaa… Heyy
+Aa Gadapanemo Ganneru Pappu Undhi
+Gurraapu Dekka Undhi… Ganjaayi Mokka Undhi
+Ee Gadapanemo Gandhapu Chekka Undhi
+Aa Gadapanuntaavaa Naganna… Ee Gadapakosthaavaa… Heyy
+Aa Gadapanuntaavaa Naganna… Ee Gadapakosthaavaa… Heyy
+
+Ee Epukosthaavaa Naganna… Aa Epununtaavaa Naganna
+Ee Epukosthaavaa Naganna… Aa Epununtaavaa Naganna
+Ee Epunemo Naayamundhi…
+Dharmamundhi, Baddhamundhi… Shuddhamundhi
+Aa Epunannitiki Mundhara “Aa” Undhi… Ante
+Annaayam, Adharmam, Abaddham… Ashh Ushh… Andhukani
+Aa Gattununtaavaa Naganna… Ee Gattukosthaavaa Naganna
+Aa Gattununtaavaa Naganna… Ee Gattukosthaavaa Naganna
+
+` },
+{ title: "🎵 Entho Fun", preview: "https://drive.google.com/file/d/1fgITmtu6-nqvu3hqd-ZU7jzdB5elYHmy/preview", lyrics: `Swargame nelapai
+Vaalinattu ningilona
+Thaarale chethiloki
+Jaarinattu gundelona
+Poolavaana kurisinattuga
+Entho fun…
+Entho fun…
+
+Nemalike paatale
+Nerpinattu koyilamma
+Kommapai koochipudi
+Aadinanntu kottha kottha
+Swaramule puttinattuga
+Entho fun…
+Entho fun…
+
+Kalidasu kavyamu
+Thyaagaraaya geyamuu
+Kalipi manasu paadinattugaa
+Andhamaina oohalu
+Anthuleni aashalu
+Vaakilantha ompinattugaa..
+Entho fun…
+Entho fun…
+
+Kallu kallu kalupukuntu
+Kalalu kalalu panchukuntu
+Kaalamantha saagiponee
+Mohamantha karigipothu
+Virahamantha virigipothu
+Dooramanthaa..cherigiponee
+
+Raathirante kammanaina
+Kaugilintha pilupani
+Thellavaarulu melukovadam
+Udayamante thiyyanaina
+Muddhu melukolupani
+Dongalaaga nidrapovadam
+Entho fun…
+Entho fun…
+
+Rojukokka bottu bille
+Lekkapeduthu chilipi addham
+Konte navve..navvuthonde
+Baitikelle vela nuvve
+Pilichi icche valapu muddhe
+Aayuvedho..penchuthondhe
+
+Intikelle vela antu
+Mallepoola parimalam
+Matthu jalli gurthu cheyadam..
+Inti baita chinnadani
+Eduru choopu kallalo
+Kottha uthsavaanni nimpadam
+Entho fun…
+Enthi fun…` },
+
+{title:"🎵Lastu Benchu Ro",preview:"https://drive.google.com/file/d/1RqWhNwSUR0tzbVodN6PVcfephv4sOH-r/preview",lyrics:`Last bench ro party symbol-u
+Veseddaam chalo wall-u poster-u
+Geliche gang idee kalar lettaro
+campus mottamu campaign cheyyaro
+
+Class room lopale meeting pettaro
+Prati okka student-u gunde kollagottaro
+cigarette dammu break-u lonaa
+Kaakaa canteen chai tonaa
+Full Too reacharge ayi modaledadaam hangaamaa
+
+Vote veyamdam Only formality
+Tappaka gelustundi mande party
+Chakram tippe sri krishnaa todunte
+Anty kouravulu andariki time bad ye
+
+Petraa chinnaa cooling glass-u
+Vacche lopu breaking news
+Short button teesesi chesey lungi dance-u
+
+Kotraa class banku ready chey raa ink-u
+Challeskundaam holy lekka vachhestunnaay results
+All of you sing it once again
+
+Last bench ro party symbol-u
+Veseddaam chalo wall-u poster-u
+Geliche gang idee kalar lettaro
+campus mottamu campaign cheyyaro
+Start ayindee ree sound-u
+Aagadu jai bolo krsihnannaa jindaabaad`}
+];
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src = src + "?autoplay=1&mute=1";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[200,230,210,220,210,200,190];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur=songDurations[index] || 210;
+  window.endTimeout=setTimeout(nextSong,dur*1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+document.getElementById('centerPlayer').onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="bored back.html";
+}
+function openPlaylist(){
+  window.location.href="all back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

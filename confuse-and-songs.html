@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root{
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(135deg,#ff512f,#dd2476,#24c6dc,#5433ff,#00c9ff);
+  background-size:500% 500%;
+  animation:gradientShift 16s ease infinite;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Colorful Floating Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+  filter:blur(1px);
+  opacity:0.9;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%;
+  max-width:1800px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 0 30px rgba(255,255,255,0.2);
+  backdrop-filter:blur(8px);
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.left-nav h2{
+  color:#00e6ff;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+  text-shadow:0 0 8px #00e6ff;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.08);
+  color:#ffebf7;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.3s, box-shadow 0.3s, color 0.3s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.2);
+  box-shadow:0 0 8px rgba(255,255,255,0.25) inset;
+  color:#00e6ff;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#00e6ff,#00ffa3,#ffeb3b);
+  color:#000;
+  box-shadow:0 0 15px rgba(255,255,255,0.4) inset;
+  text-shadow:0 0 10px #fff;
+}
+
+/* Buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, filter 0.3s ease;
+  box-shadow:0 0 12px rgba(255,255,255,0.3);
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.2);
+}
+.back-btn{
+  background:linear-gradient(135deg,#a1c4fd,#c2e9fb);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 0 40px rgba(0,0,0,0.5);
+  backdrop-filter:blur(8px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,255,255,0.1);
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics panel */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 0 30px rgba(255,255,255,0.2);
+  backdrop-filter:blur(8px);
+  overflow:auto;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.lyrics-panel h3{
+  color:#ffde59;
+  text-align:center;
+  margin-bottom:8px;
+  text-shadow:0 0 10px #ffde59;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#fff;
+  line-height:1.6;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.6rem;
+  font-weight:700;
+  color:#fff;
+  text-shadow:0 0 10px #00ffe5, 0 0 15px #ff00ff;
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">🎶 💜 Mind Harmony — Relief 🌿</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🔥 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Video Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Lyrics Sidebar -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Colorful Animated Bubbles 🌈
+const bubblesContainer = document.getElementById('bubbles');
+const colors = ['#00ffff','#ff00ff','#ffff00','#00ff66','#ff3399','#39ff14','#00bfff','#ffa600','#ff1493'];
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*25+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  b.style.background=`radial-gradient(circle at center, ${colors[Math.floor(Math.random()*colors.length)]} 0%, transparent 70%)`;
+  bubblesContainer.appendChild(b);
+}
+
+// SONG DATA
+const songs = [
+  {
+    title: "Akhilanda Koti",
+    preview: "https://drive.google.com/file/d/1nCfLm-F96ow1Q9vMHs3KTip1ZjITAQs8/preview",
+    lyrics: `Akhilaanda Koti
+Brahmaanda naayakaa
+Aananda nilaya
+Varapari paalaka
+Govinda govinda
+Puvvu punnami vennella govinda
+Govinda govinda
+Chinni poomaala sevala govinda
+
+Vinna venkatesham
+Nanadho nannadha
+Saadhaa venkatesham
+Smaraami smaraami
+
+Akhilaanda Koti
+Brahmaanda naayakaa
+Aananda nilaya
+Varapari paalaka
+
+Shree venkatesa
+Sriha sambandha
+Sevaa bhaagyamu
+Dehi mukundha
+
+Akhilaanda Koti
+Brahmaanda naayakaa
+Aananda nilaya
+Varapari paalaka
+
+Thiru padhamulaku
+Thiru vadi dhandalu
+Sree bhoo sathulaku
+Siri haaramulu.. (2 times)
+
+Akalanka shankha chakraalaku
+Apurroopa kusuma maalikalu
+Aajaanu baahu paryanathamu
+Alarula thaavala haaramulu
+
+Akhilaanda Koti
+Brahmaanda naayakaa
+Aananda nilaya
+Varapari paalaka.. (2 times)
+
+Malle marumalle
+Madhura mandhaara
+Manoranjithaalu
+Champaka paarijaatha chaamanthi
+Jaaji virajaaji sampengalu
+Kaaluvalu kamalaalu
+Kanakaambaraalu
+Ponna pogada molla mogali
+Gulaabeelu..
+
+Maruvam dhamanam maavi maachi
+Vatti veru kuruverulu
+Garuda ganneru nandhi vardhanalu
+Haritha hardhra bilva thulasee dhalaalu
+Nee kosam virise govinda govinda
+Ninu choosi murise
+Govinda govinda govinda govinda govinda..
+Nee menu thaaki merise
+
+Akhilaanda Koti
+Brahmaanda naayakaa
+Aananda nilaya
+Varapari paalaka..`
+  },
+  {
+    title: "Choodarandamma Vachadamma Krishnudu",
+    preview: "https://drive.google.com/file/d/176jL5FOBUw95wWPwyWbIsUaOt0vXEx_F/preview",
+    lyrics: `Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Mana gandaalu daatinchu nallavaadu
+
+Taarangaalu aadevaadu
+Pallanagrovi oodevaadu
+Vacchaadamma vennala dongodu
+
+Taarangaalu aadevaadu
+Pallanagrovi oodevaadu
+Vacchaadamma vennala dongodu
+
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+
+Padagalu tokkina pillaadamma
+Maduguna aadina gadusodamma
+Vacchaadamma govula gopannaa
+Padagalu tokkina pillaadamma
+Maduguna aadina gadusodamma
+Vacchaadamma govula gopannaa
+Vaadu.. kondanu ekkina allari bullodoo
+
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+
+Cheeralu dochina chinnodammaa
+Gaaredi chetala pidugoyamma
+Vacchaadamma kitukula kittayyaa
+Cheeralu dochina chinnodammaa
+Gaaredi chetala pidugoyamma
+Vacchaadamma kitukula kittayyaa
+
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+
+Baavaku buddhulu cheppinavaadu
+Bhaamala paalita premalavaadu
+Vacchadamma raadhaakrishnayyaa
+Baavaku buddhulu cheppinavaadu
+Bhaamala paalita premalavaadu
+Vacchadamma raadhaakrishnayyaa
+Vaadu venuvuloode vennela kannayyaa
+
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+
+Maamaku tagga alluduvaadu
+Chellinikaachina annayyaadu
+Vacchaadamma andari krishnayyaa
+Maamaku tagga alluduvaadu
+Chellinikaachina annayyaadu
+Vacchaadamma andari krishnayyaa
+
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+
+Chakram patti teppevaadu
+Ammaku viswam choopinavaadu
+Vacchadammaa muddula krishnayyaa
+Chakram patti teppevaadu
+Ammaku viswam choopinavaadu
+Vacchadammaa muddula krishnayyaa
+Vaadu dokaalanni kaachevaadoo
+
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+
+Guruvaayooru kshetramlona
+Guruvai vunnaadammavaadu
+Chandana gandhapu sundaradoyammaa
+Guruvaayooru kshetramlona
+Guruvai vunnaadammavaadu
+Chandana gandhapu sundaradoyammaa
+Vaadu guruvaayooru devudu ayinaadoo
+
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+Choodarandammaa vacchaadamma krishnudu..
+Repalle vaadalni.. eluvaadu
+
+
+`
+  },
+   {
+    title: "Bhajare Nanda Gopala",
+    preview: "https://drive.google.com/file/d/1coZK7hVQ4IsPxsAF2G3sI2hdd-CEA3D8/preview",
+    lyrics: `Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+
+Murali gana lola dooramela
+Digi raa krishna
+Kadalai pongutunna prema
+Neela kada raa krishna
+Anduko sambarala swagathala
+Maalika
+Idugo ninnu chusi velugutunna
+Dwaraka
+
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+
+Ma eda matuna dagina asalu
+Vennela vindanuko
+Maa kannulukandani mayalu
+Chooputu mellaga dochukupo
+Girine velipaina nilipina maa
+Kannaya
+Thulasidalanike ela tuginavayya
+Kondantha baram gorantha choopina
+Leela krishnayya
+Maa cheeralu dochina allari
+Atalu maa paina e maya
+
+Bajare bajare bajare
+Baja  Baja
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+
+Mayadi kavani madhavadune
+Anu cherina pranamidi
+Maa maayani badani pillana grovila
+Ragam cheyemani
+Evarini evarithoti mudi peduthu
+Nee ata
+Chivariki prathi okarini nadipedavu
+Kada nee bata
+Therani vedana thyiyyani lalana
+Anni nuvvayya
+Nee andela muvvala savvadi gundelo
+Moginchi ravayya
+
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare
+Bajare nanda gopala hare`
+  },
+
+ {
+    title: "Chandrasekhara Ashtakam",
+    preview: "https://drive.google.com/file/d/168k-flKgvY_cozCa7uP9TmqYl6k0kSke/preview",
+    lyrics: `chandraśēkhara chandraśēkhara chandraśēkhara pāhimām |
+chandraśēkhara chandraśēkhara chandraśēkhara rakṣamām ‖
+
+ratnasānu śarāsanaṃ rajatādri śṛṅga nikētanaṃ
+śiñjinīkṛta pannagēśvara machyutānala sāyakam |
+kṣipradagda puratrayaṃ tridaśālayai rabhivanditaṃ
+chandraśēkharamāśrayē mama kiṃ kariṣyati vai yamaḥ ‖ 1 ‖
+
+mattavāraṇa mukhyacharma kṛtōttarīya manōharaṃ
+paṅkajāsana padmalōchana pūjitāṅghri sarōruhaṃ |
+dēva sindhu taraṅga śrīkara sikta śubhra jaṭādharaṃ
+chandraśēkharamāśrayē mama kiṃ kariṣyati vai yamaḥ ‖ 2 ‖
+
+kuṇḍalīkṛta kuṇḍalīśvara kuṇḍalaṃ vṛṣavāhanaṃ
+nāradādi munīśvara stutavaibhavaṃ bhuvanēśvaraṃ |
+andhakāntaka māśritāmara pādapaṃ śamanāntakaṃ
+chandraśēkharamāśrayē mama kiṃ kariṣyati vai yamaḥ ‖ 3 ‖
+
+pañchapādapa puṣpagandha padāmbuja dvayaśōbhitaṃ
+phālalōchana jātapāvaka dagdha manmadha vigrahaṃ |
+bhasmadigda kaḻēbaraṃ bhavanāśanaṃ bhava mavyayaṃ
+chandraśēkharamāśrayē mama kiṃ kariṣyati vai yamaḥ ‖ 4 ‖
+
+yakṣa rājasakhaṃ bhagākṣa haraṃ bhujaṅga vibhūṣaṇam
+śailarāja sutā pariṣkṛta chāruvāma kaḻēbaram |
+kṣēḻa nīlagaḻaṃ paraśvadha dhāriṇaṃ mṛgadhāriṇam
+chandraśēkharamāśrayē mama kiṃ kariṣyati vai yamaḥ ‖ 5 ‖
+
+bhēṣajaṃ bhavarōgiṇā makhilāpadā mapahāriṇaṃ
+dakṣayajJṇa vināśanaṃ triguṇātmakaṃ trivilōchanaṃ |
+bhukti mukti phalapradaṃ sakalāgha saṅgha nibarhaṇaṃ
+chandraśēkharamāśrayē mama kiṃ kariṣyati vai yamaḥ ‖ 6 ‖
+
+viśvasṛṣṭi vidhāyakaṃ punarēvapālana tatparaṃ
+saṃharaṃ tamapi prapañcha maśēṣalōka nivāsinaṃ |
+krīḍayanta maharniśaṃ gaṇanātha yūtha samanvitaṃ
+chandraśēkharamāśrayē mama kiṃ kariṣyati vai yamaḥ ‖ 7 ‖
+
+bhaktavatsala marchitaṃ nidhimakṣayaṃ haridambaraṃ
+sarvabhūta patiṃ parātpara mapramēya manuttamaṃ |
+sōmavārina bhōhutāśana sōma pādyakhilākṛtiṃ
+chandraśēkhara ēva tasya dadāti mukti mayatnataḥ ‖ 8 ‖`
+  },
+ {
+    title: "Shiva Panchakshara Stotram",
+    preview: "https://drive.google.com/file/d/1LTuleoCtufZJXCr2k3ARcb07vBgXpLjl/preview",
+    lyrics: `nāgēndrahārāya trilōcanāya
+bhasmāṅgarāgāya mahēśvarāya |
+nityāya śuddhāya digambarāya
+tasmai nakārāya namaḥ śivāya || 1 ||
+
+mandākinīsalilacandanacarcitāya
+nandīśvarapramathanāthamahēśvarāya |
+mandāramukhyabahupuṣpasupūjitāya
+tasmai makārāya namaḥ śivāya || 2 ||
+
+śivāya gaurīvadanābjavr̥nda-
+sūryāya dakṣādhvaranāśakāya |
+śrīnīlakaṇṭhāya vr̥ṣadhvajāya
+tasmai śikārāya namaḥ śivāya || 3 ||
+
+vasiṣṭhakumbhōdbhavagautamārya-
+munīndradēvārcitaśēkharāya |
+candrārkavaiśvānaralōcanāya
+tasmai vakārāya namaḥ śivāya || 4 ||
+
+yakṣasvarūpāya jaṭādharāya [*yajña*]
+pinākahastāya sanātanāya |
+divyāya dēvāya digambarāya
+tasmai yakārāya namaḥ śivāya || 5 ||
+
+pañcākṣaramidaṁ puṇyaṁ yaḥ paṭhēcchivasannidhau |
+śivalōkamavāpnōti śivēna sahamōdatē |
+
+Iti śrī śaṅkarācārya viracitaṁ śiva pan̄cākṣara stōtraṁ sampūrṇaṁ ||`
+  },
+
+ {
+    title: "Ganga Aarti",
+    preview: "https://drive.google.com/file/d/13YMJ4NU5jHVlfQTp7WLF-J2q87vtIk1p/preview",
+    lyrics: `Har Har Gange, Jai Maa Gange,
+Har Har Gange, Jai Maa Gange ॥
+
+Om Jai Gange Mata,
+Shri Jai Gange Mata ।
+Jo Nar Tumako Dhyata,
+Manavanchit Phal Pata ॥
+
+Chandr Si Jot Tumhari,
+Jal Nirmal Aata ।
+Sharan Paden Jo Teri,
+So Nar Tar Jata ॥
+
+॥ Om Jay Gange Mata..॥
+
+Putr Sagar Ke Tare,
+Sab Jag Ko Gyata ।
+Kripa Drshti Tumhari,
+Tribhuvan Sukh Data ॥
+
+॥ Om Jay Gange Mata..॥
+
+Ek Hi Bar Jo Teri,
+Sharanagati Aata ।
+Yam Ki Traas Mita Kar,
+Paramagati Pata ॥
+
+॥ Om Jay Gange Mata..॥
+
+Aarti Maat Tumhari,
+Jo Jan Nitya Gata ।
+Daas Vahi Sahaj Mein,
+Muktti Ko Pata ॥
+
+॥ Om Jay Gange Mata..॥
+
+Om Jai Gange Mata,
+Shri Jai Gange Mata ।
+Jo Nar Tumako Dhyata, 
+Manavanchit Phal Pata ॥
+
+Om Jai Gange Mata,
+Shri Jai Gange Mata ।`
+  },
+ {
+    title: "Jai Ho Jai Ho Shankara",
+    preview: "https://drive.google.com/file/d/1DA2Qmh1pc-NHLYJ6Pq8uR_dENnPQhgRB/preview",
+    lyrics: `Jai ho jai ho Shankara
+(Bholenath Shankara)
+Aadi dev Shankara
+(Hey Shivay Shankara)
+Tere jaap ke bina
+(Bholenath Shankara)
+Chale ye saans kis tarah
+(Hey Shivay Shankara)
+
+Mera karm tu hi jaane
+Kya bura hai kya bhalaa
+Tere raaste pe main toh
+Aankh moond ke chalaa
+
+Tere naam ki jot ne
+Saara har liya tamas mera
+
+Namo namo ji Shankara
+Bholenath Shankara
+Hey Triloknath Shambhu
+Hey Shivay Shankara
+
+Namo Namo ji Shankara
+Bholenath Shankara
+Rudradev hey Maheshvara
+
+Srishti ke janam se bhi
+(O o..)
+Pehle tera vaas tha
+(O o..)
+Ye jag rahe ya naa rahe
+(O o..)
+Rahegi teri aastha
+(O o..)
+
+Kya samay.. kya pralay
+Dono mein teri mahaanta
+Mahaanta.. mahaanta..
+
+Seepiyon ki ontt main
+(Bholenath Shankara)
+Motiyan ho jis tarah
+(Hey Shivay Shankara)
+Mere mann mein Shankara
+(Bholenath Shankara)
+Tu basa hai uss tarah
+(Hey Shivay Shankara)
+
+Mujhe bharam tha jo hai mera
+Tha kabhi nahin mera
+Arth kya nirarth kya
+Jo bhi hai sabhi tera
+Tere saamne hai jhuka
+Mere sar pe haath rakh tera
+
+Namo Namo ji Shankara
+Bholenath Shankara
+Hey Triloknath Shambhu
+Hey Shivay Shankara
+
+Namo namo ji Shankara
+Bholenath Shankara
+Rudradev hey Maheshvara
+
+Chandrama lalaat pe
+Bhasm hai bhujaaon mein
+Vastra baagh chhaal ka
+Hai khadau paanv mein
+
+Pyaas kya aur tujhe
+Ganga hai teri jataaon mein
+Jataaon mein
+Jataaon mein
+Jataaon mein
+
+
+Doosron ke waaste
+(Bholenath Shankara)
+Tu sadaive hai jiya
+(Hey Shivay Shankara)
+Maanga kuch kabhi nahi
+(Bholenath Shankara)
+Tune sirf hai diya
+(Hey Shivay Shankara)
+
+Samudra manthan ka tha samay jo aa pada
+Dwand dono lok me vishamrit pe tha chida
+Amrit se bhi main baant ke
+Pyaala vish ka tune khud piya
+
+Namo Namo ji Shankara
+Bholenath Shankara
+Hey Triloknath shambhu
+Hey Shivay Shankara
+
+Namo namo ji Shankara
+Bholenath Shankara
+Rudradev hey Maheshvara
+Rudradev hey Maheshvara
+Rudradev hey Maheshvara
+
+`
+  },
+ {
+    title: "Namo Namah Shivaya",
+    preview: "https://drive.google.com/file/d/1LDKyU7ZUEnDRt6FsT1hNt_FK9YDoR7ou/preview",
+    lyrics: `Namo Namah Namo Namah
+Namo Namah Shivaya
+Namo Namah Namo Namah
+Namo Namah Shivaya
+
+Namo Namah Namo Namah
+Namo Namah Shivaya
+Namo Namah Namo Namah
+Namo Namah Shivaya
+
+Hey, Dama Dama Dam Adharagottu
+Damarukaanni Dhanchikottu
+Aastadikkula Adiretattu
+Thandaveswara
+Namo Namah Namo Namah
+Namo Namah Shivaya
+
+Bham Bham Bham Modalupettu
+Amruthaanni Panchipettu
+Gunde Vendikondaiyettu
+Kundaleshwara
+Namo Namah Namo Namah
+Namo Namah Shivaya
+
+Jai Shankara
+Jai Jai Jai Jai Shankara
+Nippu Kannu Ippi
+Janam Tappulu Kalcheiyyara
+
+Jai Shankara
+Shiva Shiva Shiva Shankara
+Trisulam Tippi Supi
+Manchi Daari Nadapara
+
+Namo Namah Namo Namah
+Namo Namah Shivaya (x4)
+
+Thappu Chesthe
+Brahma Thalane Thunchinavura
+Vedukunte Vishanaina Minginavura
+Namo Namah Namo Namah
+Namo Namah Shivaya
+
+Aadhi Parashakthi Ninnu Korukundira
+Sustilona Modhati Prema Kadhe Nidhira
+Namo Namah Namo Namah
+Namo Namah Shivaya
+
+RaRa Shivaratri Sundara
+Ma Raatha Marchi Uddarinchara
+Aananthamaina Ni Premalo
+Ravantha Maku Isthe
+Bhoomi Swargamounura
+
+Namo Namah Namo Namah
+Namo Namah Shivaya (x4)
+
+Aadhi Premika Niku Polika
+Ledhu Ledhika Jagaana
+Bhaktha Kotiki Unna Korika
+Thirchuthavayya Swayaana
+
+Eswari Kosam
+Aardhanarishwaarudaiyyavu
+Lokanne Yele Parameshwaruda
+Yelotu Ranivu Yeppudu Thoduntavu
+Magadante Nuvve Maheshwaruda
+Aadhi Nuvve Antham Nuvve
+Kaapade Aapdbhaandhaavudaa
+
+Namo Namah Namo Namah
+Namo Namah Shivaya (x4)
+
+Siva Siva Siva….
+
+Namo Namah Namo Namah
+Namo Namah Shivaya
+Siva Siva Siva… (x4)`
+  },
+ {
+    title: "Rudrashtakam ",
+    preview: "https://drive.google.com/file/d/13pvkSBwdE6krWTnQ4JpFXMIAAX9sm1cu/preview",
+    lyrics: `Namami Shamishan Nirvan Roopam
+Vibhum Vyapakam Brahma Veda Swaroopam |
+Nijam Nirgunam Nirvikalpam Nireeham
+Chidakaash Maakash Vaasam Bhajeham || 1 ||
+
+Nirakaar Omkar Moolam Turiyam
+Giragyaan Goteet Meesham Girisham |
+Karaalam Mahakaal Kaalam Kripalam
+Gunagaar Sansaar Paaram Naatoham|| 2 ||
+
+Tusharaadri Sankaash Gauram Gabheeram
+Manobhoot Koti Prabha Shi Shareeram |
+Sfooranmauli Kallolini Charu Ganga
+Lasadbhaal Baalendu Kanthe Bhujanga|| 3 ||
+
+Chalatkundalam Bhru Sunethram Vishaalam
+Prasannananam Neelkantham Dayalam |
+Mrigadheesh Charmaambaram Mundamaalam
+Priyam Shankaram Sarvanaatham Bhajaami || 4 ||
+
+Prachandam Prakrishtam Pragalbham Paresham
+Akhandam Ajambhaanukoti Prakaasham |
+Trayahshool Nirmoolanam Shoolpaanim
+Bhajeham Bhawani Patim Bhaav Gamyam || 5 ||
+
+Kalateet Kalyaan Kalpantkaari
+Sada Sajjanaanand Daata Purari |
+Chidaanand Sandoh Mohapahari
+Praseed Praseed Prabho Manmathari || 6 ||
+
+Nayaavad Umanath Paadaravindam
+Bhajanteeha Lokey Parewa Naraanaam |
+Na Tawatsukham Shaantisantapnaasham
+Praseed Prabho Sarvabhootadhivaasam || 7 ||
+
+Na Jaanaami Yogam Japam Naiva Poojaam
+Na Toham Sada Sarvada Shambhu Tubhhyam |
+Jarajanm Dukhhaudya Taapatyamaanam
+Prabho Paahi Aapan Namaami Shri Shambho || 8 ||
+
+Rudrashtakamidam Proktam Vipren Hartoshaye |
+Ye Pathanti Naraa Bhaktaya Teyshaam Shambhu Praseedati ||`
+  },
+ {
+    title: "Ekadantaya Vakratundaya Mantra",
+    preview: "https://drive.google.com/file/d/1eExKiMNfI49b52pfNYBGK5dHsBflAIFO/preview",
+    lyrics: `Gana Nayakaya Gana Daivataya
+Gana Dhyakshaya Dheemahi
+Guna Shariraya Guna Manditaya Guneshanaya Dheemahi
+
+Gunadhitaya Gunadhishaya
+Guna Pravishtaya Dheemahi 
+
+Ekadantay Vakratunday
+Gauritanay Dhimahi
+Gajeshanay Bhalchandray
+Shree Ganeshay Dhimahi
+
+Gana Chaturaya Gana Pranaya Ganantaratmane
+Gaanotsukhaya Gaanamattaya
+Gannott Sukh Mana Se
+
+Guru Pujitaya Guru Daivataya
+Guru Kulasthaine
+Guru Vikramaya Guiyya Pravaraya Gurave Guna Gurave
+
+Gurudaitya Kalakchhetre
+Guru Dharma Sada Radhyaya
+Guru Putra Paripratre
+Guru Pakhanda Khanda Khaya 
+
+Geeta Saraya Geeta Tatvaya
+Geeta Gotraya Dheemahi
+Gudha Gulfaya Gandha Mattaya
+Gojaya Pradaya Dheemahi 
+
+Gunadhitaya Gunadhishaya
+Guna Pravishtaya Dheemahi 
+
+Ekadantay Vakratunday
+Gauritanay Dhimahi
+Gajeshanay Bhalchandray
+Shree Ganeshay Dhimahi
+
+Gandharva Rajaya Gandhaya
+
+Gandharva Gana Shravan Pranaime
+
+Gaadha Anuragaya Granthaya Geetaya Grantartha Tatvamide
+Ide Gunavate Ganapataye
+
+Granth Gitaya Granth Geyaya Granthantaratmane
+Gita Linaya Gitashrayaya
+Gita Vadya Patave
+
+Geya Charitaya Gayaka Varaya Gandharva Priya Krite
+Gayakadhina Vigrahaya
+Ganga Jala Pranyavate
+
+Gauri Stanandhayaya
+Gauri Hridaya Nandanaya
+Gaura Bhanu Sutaya
+Gauri Ganeshvaraya
+
+Gauri Pranayaya
+
+Gauri Pravanaya
+Gaura-Bhavaya Dhimahi
+Gosahasraya Govardhanaya
+Gopa Gopaya Dhimahi
+
+Guna Titaya Guna Dhishaya
+Guna Pravishtaya Dhimahi
+
+Ekadantaya Vakratundaya
+Gauri Tanaya Dheemahi
+Gajeshanaya Bhalchandraya
+Shree Ganeshaya Dheemahi
+
+Ekadantay Vakratunday
+Gauritanay Dhimahi
+Gajeshanay Bhalchandray
+Shree Ganeshay Dhimahi`
+  }
+];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src = src + "?autoplay=1&mute=1";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[200,230,210,220,210,200,190];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur=songDurations[index] || 210;
+  window.endTimeout=setTimeout(nextSong,dur*1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+document.getElementById('centerPlayer').onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="confused back.html";
+}
+function openPlaylist(){
+  window.location.href="all back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

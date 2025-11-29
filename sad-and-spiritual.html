@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root{
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  background-size:400% 400%;
+  animation:gradientShift 15s ease infinite;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.25);
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%;
+  max-width:1800px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#00e6ff;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.08);
+  color:#00e6ff;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.15);
+  box-shadow:0 0 8px rgba(255,255,255,0.15) inset;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#00e6ff,#00ffa3);
+  color:#000;
+  box-shadow:0 0 10px rgba(255,255,255,0.3) inset;
+}
+
+/* Buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, filter 0.3s ease;
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+.back-btn{
+  background:linear-gradient(135deg,#a1c4fd,#c2e9fb);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics panel */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:auto;
+}
+.lyrics-panel h3{
+  color:#00ffa3;
+  text-align:center;
+  margin-bottom:8px;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#fff;
+  line-height:1.6;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.5rem;
+  font-weight:700;
+  color:#00e6ff;
+  text-shadow:0 2px 10px rgba(0,0,0,0.7);
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">Spirutuality✨</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🎵 Playlist (12)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Video Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Lyrics Sidebar -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Background bubbles
+const bubblesContainer=document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// SONG DATA (10 songs)
+const songs=[
+  {title:"🎶 Eesha Girisha",preview:"https://drive.google.com/file/d/1IC607BDyqmATTTFWbY3oBTmJ9C4x_Ipi/preview",lyrics:`Isha Girisha naresha paresha Mahesha bhileshayabhooshana bho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Umaya divyasumangala vigrahayalingitha vamaanga vibho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+UriKuru mamaajnamanadham durikurume durithambho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Rishivaramanasa hamsa chara chara janana sthithi laya karana bho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Anthahkarana vishudhim bhakthim chathwayi sathim pradehi vibho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Karunavarunalaya mayi dasa udhasasthavochitho na hi bho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Jaya Kailasa nivasa pramatha ganadhisha bhoosuraarchitha bho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Janutha kaja kingkinu jhanuthat shabdhair natasi maha nata bho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Dharmasthapana Daksha trayaksha guro Daksha yajna shikshaka bho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Balamaarogyam chaayustwadguna ruchithaam chiram pradehi vibho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Bhagawanbharga bhayapaha bhutapathe bhoothibhooshithanga vibho
+
+Samba Sadashiva Shambho Shankara sharanam may thava charanayugam
+
+
+Sarva deva sarvothama sarvada durvritha garva harana vibho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Shad ripu shadoorumi shad vikara hara San mukha Shanmukha janaka vibho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam
+
+
+Sathyam jnanamanantham brahme thye thallakshana lakshitha bho
+
+Samba Sadashiva Shambho Shankara sharanam may thava charanayugam
+
+
+Haahaa hoohoo mukha sura gayaka gita padana padya vibho
+
+Samba Sadashiva Shambho Sankara sharanam may thava charanayugam`},
+  {title:"🎶 Brahmala nene ninnu",preview:"https://drive.google.com/file/d/1q4LFu6QeulR2nJVKgw9kuenfHYnkNt-r/preview",lyrics:`Brahma La Nene Ninnu Srutinchaan Anukona
+Bomma La Nuvve Nannu Puttinchaav Anukona
+Nammukuntundho Navvukuntundho
+Yemi Antundho Nee Bhaavana
+Needhe Needhe Prashna Needhe
+Neede Neede Badhulu Needhe
+
+Nee Deham Lo Praanam La
+Velige Kaanthi Naa Navve Ani
+Nee Gundello Palike Naadham
+Naa Pedhavi Pai Murali Ani
+
+Thelusuko Galige Thelivi Neekundhe
+Theralu Tholagisthe Velugu Vasthundhe
+Needhe Needhe Swapnam Needhe
+Needey Needey Sathyam Needhe
+
+Yekadekkadekkadani Dhikkulani Thirigithe
+Ninnu Nuvvu Choodagalava Oh Rabba
+Karunatho Karigina Madhi Mandhiramuna
+Koluvai Nuvvu Leva Oh Rabba
+Akadakkadakkadani Neeli Ningi Thadimithe
+
+Ninnu Nuvvu Thaakagalava Oh Rabba
+Chelimina Panchaga Chaachina Cheyyivaithe
+Dhaivam Nuvvu Kaadha Aye Khuda
+Needhe Needhe Dharmam Needhe
+Needhey Needhey Marmam Needhe`},
+  {title:"🎶 Pravachanam By Chagantivaaru",preview:"https://drive.google.com/file/d/1NKBaxbw1oB7Onq6IWq1PHTkP_x6agg1R/preview",lyrics:`Cool Down.....`},
+  {title:"🎶 Mukundha Mukundha..",preview:"https://drive.google.com/file/d/1yi08zY36wV8j8vKW8UaU_uuckPY0KZc-/preview",lyrics:`Mukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga Mukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga
+
+Venna Donga Vaina Mannu Thintivaa Kanne Gunde Prema Layala Mrudanganivaa
+
+Mukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga
+
+Jeevakoti Nee Cheti Tholu Bommale Ninnu Talachi Aata Laade Keelu Bommale
+
+Mukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga
+
+Jai Jai Ram
+
+Jai Jai Ram
+
+Jai Jai Ram
+
+Jai Jai Ram
+
+Sita Ram Jai Jai Ram
+
+Neelaala Ningi Kinda Teliyaadu Bhoomi Thana Lone Chipinchadu Ee Krishna SwamiPadaga Vippi Maduguna Leche Sarpa Seshame Ekki Naatya Maadi Kaaleeyuni Darpamanichaadu Nee Dhyaanam Cheyu Veela Vignaana Meega Agnaanam Roopu Maape Krishna Tathvamega
+
+Ata Arjunu Dondenu Ne Daya Valla Geethoopadesham Jagathiki Saitham Pranam Pose Manthropadesham
+
+Vedaala Saaramantha Vaasu Devudee Repalle Ragam Taalam Raajeevude
+
+Ee Mukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga
+
+Matsyamalle Neetina Theeli Vedamulanu Kaachi Kuurma Roopa Dharivi Neevai Bhuvini Moosinave
+
+Vaamanudai Paadamunethi Ningi Kolichi Naavey Narasimhuni Amse Neevai Hiranyuni Chilchaavu Ravanuni Thalalanu Koolchi Raamudivai Nilichavu Krishnu Dalle Venuvoodi Premanu Panchaavu
+
+Ika Nee Avatharalannenunna Aadhaaram Nene Nee Voravadi Patta Mudi Padi Unta Yedemaina Nene
+
+Madi Loni Prema Neede Madhavudaa Mandara Puwe Nenu ManuvaadaraMukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga Mukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga
+
+Mukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga Mukunda Mukunda Krishna Mukunda Mukunda Swaram Lo Tharanga Brunda Vanam Lo Varan Ga`},
+  {title:"🎶 Jataata Veegalajjalalla",preview:"https://drive.google.com/file/d/1GVSxZ2Ey58NqYt6mlUYF4CqDEL5Z7i3e/preview",lyrics:`జటాటవీగలజ్జలప్రవాహపావితస్థలే
+గలేవలంబ్య లంబితాం భుజంగతుంగమాలికామ్ ।
+డమడ్డమడ్డమడ్డమన్నినాదవడ్డమర్వయం
+చకార చండతాండవం తనోతు నః శివః శివమ్ ॥ 1 ॥
+
+జటాకటాహసంభ్రమభ్రమన్నిలింపనిర్ఝరీ-
+-విలోలవీచివల్లరీవిరాజమానమూర్ధని ।
+ధగద్ధగద్ధగజ్జ్వలల్లలాటపట్టపావకే
+కిశోరచంద్రశేఖరే రతిః ప్రతిక్షణం మమ ॥ 2 ॥
+
+ధరాధరేంద్రనందినీవిలాసబంధుబంధుర
+స్ఫురద్దిగంతసంతతిప్రమోదమానమానసే ।
+కృపాకటాక్షధోరణీనిరుద్ధదుర్ధరాపది
+క్వచిద్దిగంబరే మనో వినోదమేతు వస్తుని ॥ 3 ॥
+
+జటాభుజంగపింగళస్ఫురత్ఫణామణిప్రభా
+కదంబకుంకుమద్రవప్రలిప్తదిగ్వధూముఖే ।
+మదాంధసింధురస్ఫురత్త్వగుత్తరీయమేదురే
+మనో వినోదమద్భుతం బిభర్తు భూతభర్తరి ॥ 4 ॥
+
+సహస్రలోచనప్రభృత్యశేషలేఖశేఖర
+ప్రసూనధూళిధోరణీ విధూసరాంఘ్రిపీఠభూః ।
+భుజంగరాజమాలయా నిబద్ధజాటజూటక
+శ్రియై చిరాయ జాయతాం చకోరబంధుశేఖరః ॥ 5 ॥
+
+లలాటచత్వరజ్వలద్ధనంజయస్ఫులింగభా-
+-నిపీతపంచసాయకం నమన్నిలింపనాయకమ్ ।
+సుధామయూఖలేఖయా విరాజమానశేఖరం
+మహాకపాలిసంపదేశిరోజటాలమస్తు నః ॥ 6 ॥
+
+కరాలఫాలపట్టికాధగద్ధగద్ధగజ్జ్వల-
+ద్ధనంజయాధరీకృతప్రచండపంచసాయకే ।
+ధరాధరేంద్రనందినీకుచాగ్రచిత్రపత్రక-
+-ప్రకల్పనైకశిల్పిని త్రిలోచనే మతిర్మమ ॥ 7 ॥
+
+నవీనమేఘమండలీ నిరుద్ధదుర్ధరస్ఫురత్-
+కుహూనిశీథినీతమః ప్రబంధబంధుకంధరః ।
+నిలింపనిర్ఝరీధరస్తనోతు కృత్తిసింధురః
+కళానిధానబంధురః శ్రియం జగద్ధురంధరః ॥ 8 ॥
+
+ప్రఫుల్లనీలపంకజప్రపంచకాలిమప్రభా-
+-విలంబికంఠకందలీరుచిప్రబద్ధకంధరమ్ ।
+స్మరచ్ఛిదం పురచ్ఛిదం భవచ్ఛిదం మఖచ్ఛిదం
+గజచ్ఛిదాంధకచ్ఛిదం తమంతకచ్ఛిదం భజే ॥ 9 ॥
+
+అగర్వసర్వమంగళాకళాకదంబమంజరీ
+రసప్రవాహమాధురీ విజృంభణామధువ్రతమ్ ।
+స్మరాంతకం పురాంతకం భవాంతకం మఖాంతకం
+గజాంతకాంధకాంతకం తమంతకాంతకం భజే ॥ 10 ॥
+
+జయత్వదభ్రవిభ్రమభ్రమద్భుజంగమశ్వస-
+-ద్వినిర్గమత్క్రమస్ఫురత్కరాలఫాలహవ్యవాట్ ।
+ధిమిద్ధిమిద్ధిమిధ్వనన్మృదంగతుంగమంగళ
+ధ్వనిక్రమప్రవర్తిత ప్రచండతాండవః శివః ॥ 11 ॥
+
+దృషద్విచిత్రతల్పయోర్భుజంగమౌక్తికస్రజోర్-
+-గరిష్ఠరత్నలోష్ఠయోః సుహృద్విపక్షపక్షయోః ।
+తృష్ణారవిందచక్షుషోః ప్రజామహీమహేంద్రయోః
+సమం ప్రవర్తయన్మనః కదా సదాశివం భజే ॥ 12 ॥
+
+కదా నిలింపనిర్ఝరీనికుంజకోటరే వసన్
+విముక్తదుర్మతిః సదా శిరఃస్థమంజలిం వహన్ ।
+విముక్తలోలలోచనో లలాటఫాలలగ్నకః
+శివేతి మంత్రముచ్చరన్ సదా సుఖీ భవామ్యహమ్ ॥ 13 ॥
+
+ఇమం హి నిత్యమేవముక్తముత్తమోత్తమం స్తవం
+పఠన్స్మరన్బ్రువన్నరో విశుద్ధిమేతిసంతతమ్ ।
+హరే గురౌ సుభక్తిమాశు యాతి నాన్యథా గతిం
+విమోహనం హి దేహినాం సుశంకరస్య చింతనమ్ ॥ 14 ॥
+
+పూజావసానసమయే దశవక్త్రగీతం యః
+శంభుపూజనపరం పఠతి ప్రదోషే ।
+తస్య స్థిరాం రథగజేంద్రతురంగయుక్తాం
+లక్ష్మీం సదైవ సుముఖిం ప్రదదాతి శంభుః ॥ 15 ॥`},
+{title:"🎶 Shudhabramha",preview:"https://drive.google.com/file/d/1ol4N6-SqIn3_8kY5kztzvWKD6JzjN46j/preview",lyrics:`Shuddha Brahma Paraatpara Rama
+Kaalātmaka Parameshvara Rama
+Shuddha Brahma Paraatpara Rama
+Kalātmaka Parameshvara Rama
+
+Shesha Talpa Sukha Nidrita Rama
+Brahmaadyāmara Prārthita Rama
+Shesha Talpa Sukha Nidrita Rama
+Brahmaadyāmara Prārthita Rama
+
+Rama Rama Jaya Rāja Rama
+Rama Rama Jaya Sita Rama
+Rama Rama Jaya Rāja Rama
+Rama Rama Jaya Sita Rama
+
+Priya Guha Vinivedita Pada Rama
+Shabari Datta Phalasala Rama
+Priya Guha Vinivedita Pada Rama
+Shabari Datta Phalasāla Rama
+
+Hanumat Sevita Nija Pada Rama
+Sita Praanādhaaraka Rama
+
+Rama Rama Jaya Rāja Rama
+Rama Rama Jaya Sita Rama
+Rama Rama Jaya Rāja Rama
+Rama Rama Jaya Sita Rama
+
+Shuddha Brahma Paraatpara Rama
+Kaalātmaka Parameshvara Rama
+Shuddha Brahma Paraatpara Rama
+Kaalātmaka Parameshvara Rama
+`},
+  {title:"🎶 Venkatesha Sreenivasa..",preview:"https://drive.google.com/file/d/1adDQ9gZn4KAp-haJgXtNEFlijBMcZ651/preview",lyrics:`Venkatesa srinivasa seshashailavasaa
+Madhava keshava madhusudhana..
+Madhava keshava madhusudhana..
+Nandha nandhana narahari narayana..
+Paramthama parndhama paramanandha
+Achyutha anantha govindha..
+Achyutha anantha govindha..
+
+Veyi Naamaala Vaada venkateshuda
+Moodu naamala muddhu srinivasuda.. (2 times)
+
+Koti koti dhandaalayya konetiraayada.. (2 times)
+Korukunna vaari kongu bangaaru devuda
+Murahara nagadhara muralidhara
+Shreekara shridhara shritha mandhaara
+Sarveshwara parameshwara shanthakara
+Shanka chakra dhara saptha shaileshwara
+
+Suprbhaatha sevalo sooryudavayya.. sooryudavayya..
+Agnaanapu cheeckatulanu anachedhavayya
+Madhava keshava..
+Abhisheka sevalo murisevayya.. murisevayya..
+Athma kalmashamula kadigi kachevayya
+Srikara sridhara..
+Koti koti dhandaalayya konetiraayada..
+Korukunna vaari kongu bangaaru devuda..
+
+Padmanabha hrishikesha.. padmanabha hrishikesha
+Pannaga shayana..
+Parshurama balarama raghukula rama
+Prushothama punya purusha pundarikaaksha
+Vaamana vaasudeva vaanchitha varadha
+
+Veyyi Naamaala Vaada venkateshuda
+Moodu naamala muddhu srinivasuda..
+
+Nija paadha dharshanamuna
+Nilichevayya.. nilichevayya..
+Nee padhale dhikku ani chaatedhavayya..
+Achyutha avyaya
+Nethra dharshanaanni maaku
+Yichevayya.. yichevayya..
+Manchi maargamuna mammu nadipevaya..
+Murahara nagadhara koti koti dhandaalayya..
+Koti koti dhandaalayya konetiraayada..
+Korukunna vaari kongu bangaaru devuda..
+
+Veyyi Naamaala Vaada venkateshuda
+Moodu naamala muddhu srinivasuda..
+Koti koti dhandaalayya konetiraayada..
+Korukunna vaari kongu bangaaru devuda..
+
+
+Vayyari Kalahamsika
+Kamaneeyam
+Pareeksha
+Akhilanda Koti
+Kaliyuga Vaikuntapuri
+Govindha Hari Govindha
+Anda Pinda
+Aanandham
+Brahmothsava
+Veyi Naamaala Vaada
+Brahmanda Bhandamula
+Maha Padma Sadmey`},
+  {title:"🎶 Pravachanam  By Garikipaativaaru",preview:"https://drive.google.com/file/d/1UBstRSWw7JjhuAVSDmMpb0ycdGquMcQC/preview",lyrics:`cool....`},
+
+  {title:"🎶 Pravachanam By Chagantivaaru",preview:"https://drive.google.com/file/d/1S1dmo3ylsZgviyUUqaBfdhgw5kK-Lwqb/preview",lyrics:`cool.....`},
+
+  {title:"🎶 Om Maha Pranadeepam",preview:"https://drive.google.com/file/d/1KieV80TpKFPABZbKDG7HALScJXixro5X/preview",lyrics:`Om maha praana
+deepam shivam shivam
+Mahon kaara
+roopam shivam shivam
+Maha surya chandhradhi
+nethram pavithram
+Maha ghada thimiranthakam
+
+soura gathram
+Maha kanthi beejham
+maha divya tejam
+Bhavani sametham
+
+bhaje manjunatham
+Om Om Om
+
+Namah shankaraycha
+mayaskaraycha
+Namashivaycha shivtharaycha
+Bhavaharayacha
+Mahaprana deepam
+shivam shivam
+Bhaje manju natham
+shivam shivam
+Adhvaitha bhaskaram
+artha naareeshwaram
+Hrudhasha hrudha yangamam
+
+Chathuru dhadhi sangamam
+Pancha bhuthathmakam shat
+shathru naashakam
+Saptha swareshwaram
+Ashtasiddhishwaram
+Navarasa manoharam Dasha
+disha su vimalam
+Eka dasho jwalam
+eka nadheshwaram
+Prasthuthiva shankaram
+pranatha jana kinkaram
+
+Durjana bayankaram
+sajjana shubankaram
+Prani bhavatharakam
+prakriti hita karakam
+Bhuvana bhavya bhavadayakam
+Bhagyathmakam rakshakam
+Eesham suresham
+rushesham pareshem
+Natesham gowreesham
+ganesham bhutesham
+Maha madhura pancha
+kshari mantra maarsham
+Maha harsha varsha
+
+pravarsham su seer sham
+Om Namo harayacha
+swara harayacha
+pura harayacha
+rudra yacha
+bhadra yacha
+indra yacha
+
+nithya yacha
+nir nithya yacha
+Mahaprana deepam
+shivam shivam
+Bhaje manjunatham
+shivam shivam
+Dam damda dam damda
+dam damda dam damda
+Dan kaadhi naadha nava
+
+thandavaa dambaram
+Tha thimmi thaka
+dhimmi dhi dhimmi
+dhimi dhimmi
+Sangeetha saahithya
+subha kamala bham bharam
+Omkara ghrinkara
+shrinkara ayinkara
+Manthra beejaksharam
+manju natheshwaram
+Rugveda maadhyam
+yajurveda vedhyam
+Sama prageetham
+adtharva prabhatham
+Puranethi hasham
+prasidham vishudham
+Prapanchaika suthram
+virudham susidham
+Nakaram makaram shikaram
+vakaram yakaram nirakara
+saakara saram
+Maha kaala kalam
+
+maha neela kantam
+maha nanda nandam
+maha ttatta hasam
+Jhata jhuta rangaika
+ganga suchithram
+Jwala drudra nethram
+sumithram sugothram
+Mahaakasha basam
+maha bhanu lingam
+Maha bhartru varnam
+su varnam pra varnam
+Sourashtra sundaram
+soma nadeesh waram
+Sri saila mandiram
+sri mallika arjunam
+Ujjaini pura
+maha kaleeshwaram
+
+vaidhya nathesh waram
+Maha bheemesh waram
+amara lingesh waram
+vaama ligesh waram
+Kaashi vishweshwaram
+param grishmesh waram
+Threyambakadeesh waram
+naaga lingesh waram
+Sri Kedara lingesh waram
+Agni lingathmakam
+jyothi lingathmakam
+Vaayu lingathmakam
+aathma lingathmakam
+Akhila lingathmakam
+agni somathmakam
+
+Anadhim ameyam
+ajeyam achithyam
+Amogham apoorvam
+anantham akhandam
+Anadhim ameyam
+ajeyam achithyam
+Amogham apoorvam
+anantham akhandam
+Dharmasthalakshethra vara
+param jyothim
+Dharmasthalakshethra vara
+param jyothim
+Dharmasthalakshethra vara
+
+param jyothim
+Om Namah
+Somayacha soumyayacha
+Bhavyayacha bhagyayacha
+Shantayacha shouryayacha
+Yogayacha bhogayacha
+Kalayacha kaantayacha
+Ramyayacha gamyayacha
+Eeshayacha sreeshayacha
+Sharvayacha sarvayacha`},
+
+ {title:"🎶 Manava Sankalpaniki(Bhahubali)",preview:"https://drive.google.com/file/d/1-UC__I-1FRstR0bQ6y2iCSfhNOR-8teF/preview",lyrics:`OO Jeevanadhiii
+ooooo Jeevanadhi..
+ManavaSankalpaniki Thodai Nilichindhadaivam
+Sahoo.. Ani  Prabhanjanam
+Thana Nammakame Thana 
+AaYudhamai Poraduthuvunte
+Thalonchadha Vedhi Saithama.....
+`},
+
+ {title:"🎶 Muripala Mukundha",preview:"https://drive.google.com/file/d/1RaXGjL4LdXwZs1V5IvxIeUfc1jdyTL35/preview",lyrics:`Muripaala mukundaa…
+
+Saradaala sanandaa…
+
+Muripaala mukundaa
+
+Saradaala sanandaa
+
+Muripaala mukundaa
+
+Saradaala sanandaa
+
+Poda podalona
+
+Daagudu moothalaapara
+
+Yada yadalona
+
+Natinchindi chaalura
+
+Alasata ninu kori niluchundira
+
+
+Kanna nidurinchara
+
+Naa kanna nidurinchara
+
+Chitikena veluni
+
+Kondanu mosina
+
+Kannaa nidurinchara
+
+Naa kannaa nidurinchara
+
+Chilikina challala
+
+Kondalu dochina
+
+
+Kanna nidurinchara
+
+Naa kannaa nidurinchara
+
+Kanna nidurinchara
+
+Naa kannaa nidurinchara
+
+
+Gopela valuvalatho
+
+Chelagi alasevemo
+
+Gomuga sayaninchu
+
+Ungili vennelakai
+
+Urike ubalatamuke
+
+Oorata kaliginchu
+
+Syaamanaa…
+
+Mohanaa…
+
+Chalu chalu nee atamatalu
+
+Pavalinchaka teeravu Alasatalu
+
+virise madilo viriseyyalu
+
+
+Kanna nidurinchara
+
+Naa kannaa nidurinchara
+
+Kanna nidurinchara
+
+Naa kannaa nidurinchara
+
+
+Nera nera chupulake
+
+Karigi kadili neekai
+
+Bira bira vachitine
+
+Tadi tadi kannulatho
+
+Neepai vaali soli
+
+Tamakamu telipitine
+
+Maadhavaa…
+
+Yaadavaa…
+
+Naa mathi maali
+
+Dooshamu jarige
+
+Oo vanamaali yeddu
+
+Ninnu podiche
+
+Paapam antha naadenuraa
+
+
+Kanna nidurinchara
+
+Naa kannaa nidurinchara
+
+Kanna nidurinchara
+
+Naa kannaa nidurinchara
+
+
+
+Muripaala mukundaa
+
+Saradaala sanandaa
+
+Muripaala mukundaa
+
+Saradaala sanandaa
+
+Madana madhusoodhanaa
+
+Manohara manmohanaa
+
+Madana madhusoodhanaa
+
+Manohara manmohanaa
+
+
+Muripaala mukundaa
+
+Saradaala sanandaa
+
+Aananda aniruddhaa
+
+Aananda aniruddhaa
+
+
+
+Kanna kanna kanna..
+
+Krishnaa radhaa ramanaa
+
+Kannaa nidurinchara`}
+];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+const centerPlayer=document.getElementById('centerPlayer');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src=src+"?autoplay=1&mute=0";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[200,230,210,220,210,200,190,210,200,220];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur = songDurations[index] || 210;
+  window.endTimeout = setTimeout(nextSong, dur * 1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+centerPlayer.onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/sad%20back.html";
+}
+function openPlaylist(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

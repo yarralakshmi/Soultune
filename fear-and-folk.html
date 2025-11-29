@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Lyrics + Bubbles (Dark Edition)</title>
+<style>
+:root{
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  background-size:400% 400%;
+  animation:gradientShift 15s ease infinite;
+  color:#e0e0e0;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.08);
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%;
+  max-width:1800px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(15,15,20,0.85);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.6);
+  backdrop-filter:blur(6px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#00c8d6;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.05);
+  color:#00c8d6;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.12);
+  box-shadow:0 0 8px rgba(255,255,255,0.08) inset;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#00c8d6,#00ffa3);
+  color:#0b0b0b;
+  box-shadow:0 0 10px rgba(0,255,163,0.25) inset;
+}
+
+/* Buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:#000;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, filter 0.3s ease;
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+.back-btn{
+  background:linear-gradient(135deg,#5f72bd,#9b23ea);
+  color:#fff;
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ff6a00,#ee0979);
+  color:#fff;
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(15,15,20,0.85);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.6);
+  backdrop-filter:blur(6px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics panel */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(15,15,20,0.85);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.6);
+  backdrop-filter:blur(6px);
+  overflow:auto;
+}
+.lyrics-panel h3{
+  color:#00ffa3;
+  text-align:center;
+  margin-bottom:8px;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#e0e0e0;
+  line-height:1.6;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.5rem;
+  font-weight:700;
+  color:#00c8d6;
+  text-shadow:0 2px 10px rgba(0,0,0,0.8);
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">🎶 Janapada Peace 🌿</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🔥 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Video Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Lyrics Sidebar -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Animated bubbles
+const bubblesContainer = document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// SONG DATA
+const songs = [
+  {
+    title: "🎶 pachi pala vennela",
+    preview: "https://drive.google.com/file/d/1G0tuRCzSQeK3GuuO3EgfqMuic4Tx6bSp/preview",
+    lyrics: `Pachchi Paala Vennela
+Nelana Paraposinattu Poosene
+
+Gunugu Poola Thotalu
+Pachchi Pasupu Gommulo
+Pasupu Theesi Raasinattuga
+Poochie Thangedu Kommalu
+Vela Rangula Puvvuloye
+Bathukamma Nee Cheeralu
+Konetilo Kaluvuloye
+Gowramma Nee Ravikalu
+Enthati Andala Maharani Ve
+Nee Chuttu Poolanni Chelikattale
+Ninnu Choodalani Munduga Vachinde
+Puvvula Deepavali Bathukamma Rakatto Maa Vakili
+Murisene Paatato Prathi Logili
+
+Gangamma Chinukai Nee Kosam
+Cheruvulo Nilichindi Akasham
+Neeraka Kosam Chetlu Pulakinchii Poosene Nee Pooja Nee Kosame
+Gatlapai Gandhalu Dachindi Neekosam
+Gummadi Puvvulo E Maasam
+Gudileni Daivam Neenu Bathukamma..
+Neeku Prathi Illu Nilayame
+Vayyari Bhama Puvloy Nee Mukku Ku Mukkeralu
+Adavi Modugupuvuloye
+Nee Nuduta Kunkumalu
+Enthati Andala Maharani Ve
+Nee Chuttu Poolanni Chelikattale
+Ninnu Choodalani Munduga Vachinde Puvvula Deepavali
+Bathukamma Rakatto Maa Vakili
+Murisene Paatato Prathi Logili
+
+Kani Penchutundi Selaka
+Puvvula Seethakoka Chilaka
+Mattipoola Parimalala Paatala Pallavulu Katti Penchutundi Selaka Puvvula Seethakoka Chilaka
+Aa Thenepattulo Theepini.. Neekosam
+Uyyala Paatallo Kalabosam
+Ma Patalintu Ooregaraave Palletuurlalo..
+Minuguru Purugallo Velugulni Neekosam Daarullo Divitiga Raajesam
+Aatadunamma Neetho Aadabiddalu Adavi Nemalulai
+Thalameeda Agnipuloye
+Nee Tanuvukaabharanamu
+Telanganalo Pudithivoye
+Nuvvu Enimido Varnamu
+Enthati Andala Maharani Ve
+Nee Chuttu Pulanni Chelikattale
+Ninnu Choodalani Munduga Vachindi Puvvula Deepavali
+Bathukamma Rakatto Maa Vakili
+Murisene Paatato Prathi Logili
+
+Pachchi Paala Vennela
+Nelana Parabosinattu Poosene
+Gunugu Poola Thotalu
+Pachchi Pasupu Gommulo Pasupu Theesi Raasinattuga
+Poochie Thangedu Kommalu
+Vela Rangula Puvvuloye
+Bathukamma Nee Cheeralu
+Konetilo Kaluvuloye
+Gowramma Nee Ravikalu
+Enthati Andala Maharani Ve
+Nee Chuttu Pulanni Chelikattale
+Ninnu Choodalani Munduga Vachindi Puvvula Deepavali
+Bathukamma Rakatto Maa Vakili
+Murisene Paatato Prathi Logili
+Ninnu Pilichenamma Yeru
+Saganampothundi Ooru
+Alal Meeda Ooyaluugi
+Aatada Kove Ani Pilichenamma Yeru Saganampothundi Ooru…`
+  },
+// 2
+{
+    title: "🎶 Nindu Punnami Vela",
+    preview: "https://drive.google.com/file/d/1PK24x4ITRQX4GzNY5NkN--cAZkO04gut/preview",
+    lyrics: `Nindu.. Punnami Vela 
+Muddhunga Navveti 
+Andala Jaabillive O.. Pilla 
+Sogasaina Sirimalleve
+
+Konte Choopulavaada 
+Kori Nannadaganga 
+Korika Neekelaraa O.. Pilagaa 
+Saalinchu Nee Maataraa 
+
+Naa Oohala Raani 
+Nuvve Naa Thodani 
+Peru Raasukunnane 
+Kalisunde Rojulla 
+Noorella Bandhamani 
+Roopu Geesukunnane 
+
+Nindu.. Punnami Vela 
+Muddhunga Navveti 
+Andala Jaabillive O.. Pilla 
+Sogasaina Sirimalleve 
+
+Konte Choopulavaada 
+Kori Nannadaganga 
+Korika Neekelaraa O.. Pilagaa 
+Saalinchu Nee Mataraa 
+
+Sinukamma Merupamma 
+Sindhesi Aadanga 
+Nemalamma Nruthyanive O.. Pilla 
+Paata Koyilammave 
+
+Maatale Matthulu Soopule Soodhulu 
+Gundello Guchhakuraa O.. Pilagaa 
+Nannedho Seyakuraa..! 
+Pachhipaala Teeru Neeletha Navvulu 
+Entho Muddhugunnave 
+Ningilo Taaralu Thala Dinche Andamu 
+Ninnatta Ne Iduvane 
+
+Nindu.. Punnami Vela 
+Muddhunga Navveti 
+Andala Jaabillive O.. Pilla 
+Sogasaina Sirimalleve 
+
+Konte Choopulavaada 
+Kori Nannadaganga 
+Korika Neekelaraa O.. Pilagaa 
+Saalinchu Nee Maataraa 
+
+Thoorpu Kondala Naduma 
+Ninduga Virisina Andala Singidive 
+O Pilla, Sooda Sakkani Gummave 
+Kanusaiga Chesthaavu Naa Enta Vasthaavu 
+Maavollu Choosthaaruraa O.. Pilagaa 
+Nannisisi Elliporaa 
+Aa Rambha Ooravashi Ee Nelana Jaari 
+Neelaa Maarenemo 
+Ye Janmala Jesina Punyamo 
+Ninnu Marisi Undalenule 
+
+Nindu.. Punnami Vela 
+Muddhunga Navveti 
+Andala Jaabillive O.. Pilla 
+Sogasaina Sirimalleve 
+
+Konte Choopulavaada 
+Kori Nannadaganga 
+Korika Neekelaraa O.. Pilagaa 
+Saalinchu Nee Maataraa 
+
+Aashalenno Lona Chiguristha Unnavi 
+Nannu Aduguthunnave O.. Pilla 
+Ninnu Koruthunnave 
+Maayedho Chesinav Naa Manasu Dosinav 
+Naalokamainaavuraa O.. Pilagaa 
+Neemeeda Manasaayeraa 
+
+Naa Sikkani Prema Sekkina Devatagaa 
+Ninnu Kolusukuntane 
+Adugulla Adugesi Neelona Sagamayyi 
+Ninnu Joosukuntane 
+
+Ededu Janmala Vidiponi Bandhamai 
+Neethodu Nenuntane O.. Pilla 
+Kalakaalam Kalisundhame 
+Ededu Janmala Vidiponi Bandhamai 
+Neethodu Nenuntaraa O.. Pilagaa 
+Kalakaalam Kalisuntaraa
+
+
+`
+  },
+//3
+{
+    title: "🎶 Madana Sundari... Madana Sundari...",
+    preview: "https://drive.google.com/file/d/1OJ8IYMpRwQGeOwbSTXCpK6XhEXCB2bCL/preview",
+    lyrics: `Madana Sundari…Madana Sundari…
+hoii Madana Sundari… Madana Sundari…
+Na mama kadakochi manchamu cheyavoi
+votlulla jaari
+
+Madana Sundari Madana Sundari
+manasu aadi lagam chesukuntunadoi
+naneri koori
+
+mallochi aitharam
+manuvu kudhirindhi naaku
+aii manasentho bhangaram navindhoi singaram
+Madana Sundari Madana Sundari
+
+Na mama kadakochi manchamu cheyavoi
+votlulla jaari
+
+Madana Sundari..Madana Sundari..
+saagai o seckhani sekka sakhadavi vettavoi
+votlulla jaari
+
+Madana Sundari Madana Sundari
+padha bhadisadhodi mudhuga sekhavoi
+ni bhalamantha noori
+
+mirusuri raayimeedha
+merupayudham vachedhaka
+nuvvu nuraoyi na vadu mechedhaka
+
+Madana Sundari… Madana Sundari…
+Na mama kadakochi manchamu cheyavoi
+votlulla jaari
+
+Madana Sundari Madana Sundari
+seeranapu volavatti tholikattavoyi 
+votlulla jaari
+
+Madana Sundari Madana Sundari
+kaalnadhetatu kolatha ekkathaga 
+vettavoyi ethuntadoyi
+katturi kattuvoli pattu
+aa sakani rupalu vettu 
+chal bharma girmeti suttu 
+birruna sithralu gottu
+
+Madana Sundari Madana Sundari
+manasu aadi lagam chesukuntunadoi
+naneri koori
+
+Madana Sundari Madana Sundari
+thalaapaku thappakunda 
+hamsala designlu eyyavoi
+votlulla jaari
+
+Madana Sundari Madana Sundari
+kaalakattakemo rendu sikalodinchavoi 
+ma idhari maadhiri
+thagadi manchapu koodlu
+aa thapulu seyaani kaalu
+sekusedharani ellu 
+sedharali oori kandlu
+
+Madana Sundari… Madana Sundari…
+Na mama kadakochi manchamu cheyavoi
+votlulla jaari
+
+Madana Sundari Madana Sundari
+kusunte koosaalu kirrumanagudadhoi
+votlulla jaari
+
+Madana Sundari Madana Sundari
+sakati sekkinaalu sekkivundhiyavoi 
+sukkalu eeri
+
+aii naa vooniki nachali
+mari nannika mechali
+ayyo ni kastam vunchukonu
+ni gandam dhachukonu
+
+Madana Sundari… Madana Sundari…
+Na mama kadakochi manchamu cheyavoi
+votlulla jaari
+
+Madana Sundari Madana Sundari
+manasu aadi lagam chesukuntunadoi
+naneri koori`
+  },
+// 4
+{
+    title: "🎶 Jagamantha Neede Kadara Jangama",
+    preview: "https://drive.google.com/file/d/1Q-o_ztMSv2nso10TafMeECgAXQUM32my/preview",
+    lyrics: `Om.. Harom.. Hara..
+Om.. Harom.. Hara..
+
+Jagamantha Neede Kadara Jangamaa..Aa..
+Janamandaru Poojinche Shiva Lingamaa
+
+Arthamavani Aadhi Bhikshu Avathaarama..
+Aacharinchi Thelipe Jeevitha Saarama
+
+Naagu Paamu Nee Medalona Haaramaa..Aa..
+Narulanepudu Gaache Chedu Samhaarama
+
+Kalala Ganga Unnaa Teerani Dhaahamaa..
+Jole Patti Thiragadamu Neeku Avasarama
+
+Nindu Nalupu Roopamaa
+Nijaalento Chupumaa
+Janthu Charma Dehamaa
+Anthuleni Sandhehamaa
+
+Arthamavani Aadhibhikshu Avathaarama..
+Aacharinchi Thelipe Jeevitha Saarama..
+
+Jagamantha Nidhe Kadhara Jangamaa..Aa..
+Janamandaru Poojinche Shivalingamaa
+
+Om.. Harom.. Hara..
+Om.. Harom.. Hara..
+Om.. Harom.. Hara..
+Om.. Harom.. Hara..
+
+Paarvathi Saga Bhaagamai..
+Ghananaathudi Punaadi Puttukavai..
+Velige Neekenduko..
+Aa Smashaana Sanchaaram
+
+Kubherunike Varamulu..
+Kummarinchi Ashtasidda Nidhulu
+Nuvvemo Bhikshaatana Asalenti Ee Marmam
+
+Vishwamantha Nee Bhaktha Janame Vaalla Edalannee Nee Nivaasame
+Ayinaa Neeku Illu Ledanta Enthati Haasyame
+
+Nee Maata Daati China Cheema Kooda Kaateyyadugaa O Paramesha
+O Chitikesi Teercheyyaraada Maa Andari Harigosa
+
+Nilakada Etu Leni Nithya Prayaanamaa..
+Ninnu Koliche Bhakthula Nindu Praanama
+
+Arthamavani Aadhi Bhikshu Avathaaramaa..Aa..
+Aacharinchi Thelipe Jeevitha Saaramaa
+
+Om… Harom… Hara…
+Om… Harom… Hara…
+
+Om… Harom… Hara…
+Om… Harom… Hara…
+
+Nataraaja Swaroopamaa..
+Panchabhoothamulannee Nee Vashamaa
+Chaavu Puttukalane Minchinadi Nee Mahima
+
+Kailaasam Veedavaa
+Kaasthainaa Choodu Janam Godava..
+Anumaanam Teerchavaa..
+Nuv Manishaa Devudivaa..
+
+Nee Inti Manishi Aa Paarvathammaku Bangaaraale Niluvellaa
+Neeku Maatram Sithramgaa Ollanthaa Boodidelaa
+
+Oka Yedu Kaadu, Rendellu Kaadu
+Prathe Yedu Inthe Maa Prema
+Ninu Suttamole Enthanukunnaa
+Ye Guttu Vippavela
+
+Okka Poddu Jaagaaraalaku Dheetugaa..
+Sakkadiddu Maa Bathukulane Thetagaa..
+
+Koti Perlu Neekunnaa Alavaatugaa..
+Shakarayya Ante Paluku Premagaa..
+
+Jagamantha Neede Kadara Jangamaa..
+Janamandaru Poojinche Shivalingamaa
+
+Naagu Paamu Nee Medalona Haaramaa..
+Narulanepudu Gaache Chedu Samhaaramaa
+
+Arthamavani Aadhi Bhikshu Avathaaramaa..
+Aacharinchi Thelipe Jeevitha Saaramaa
+
+Kalala Ganga Unnaa Teerani Dhaahamaa..Aa
+Jole Patti Thiragadamu Neeku Avasaramaa..
+
+Om Harom Hara
+Om Harom Hara
+
+Telugu Maha Shivaratri Songs
+
+Jagamantha Nidhe Kadhara Jangama – Mangli
+Endi Kondalu Eletoda – Mangli
+Nandi Vahana – Madhu Priya`
+  },
+// 5
+{
+    title: "🎶 Poiraara chinni tandri",
+    preview: "https://drive.google.com/file/d/1pPAUUKjR7JKfZlQP16GM_vbMQ_VPdQzj/preview",
+    lyrics: `Poiraara chinni tandri
+Poiraara ratnamaa
+Poiraara naayi kodukaa
+Ellakaalam sallagundi
+Laagaraa nuvvu batuku bandi
+Amma deevena neeku undi
+Ekkadunna pailangundu
+Poiraara ratnamaa
+Poiraara naayi kodukaa
+
+Ooru idisi palle nidisi
+Talli nidisi tandri nidisi
+Nenu poyi vasthane
+Naa kanna tandri batikite mallosthane
+Naa kanna tandri batikite mallosthane
+
+Anta maata anaku bidda
+Batakalane pamputhunna
+Chinnanaati teepi guruthulu
+Gunde thatti leputhunante
+Naa manasu tallaa dilero
+Nee tandri kumilipayera
+Nee tandri kumilipayera
+
+Electionla eththugadalo
+Kulam kutrala kummulaatalo
+Kandlamunde kannatallini
+Kasaayollu nariki champite
+Saaksham ivvani paadu janmani
+Kumili kumili edusthunna
+Ayya maatanu javaadatakka
+Oori polimeralelladaati
+Nenu poyi vasthane
+Ayyaa batikite mallosthane
+Ayyaa… ayyaa
+Ayyaa batikite mallosthane
+
+Poiraara chinni tandri
+Poiraara ratnamaa
+Poiraara naayi kodukaa
+
+Matham pera chichchu petti
+Maalo maake godavaletti
+Chaavutalo chelagaatamaadi
+Dikku leni batuku chesi
+Putti perigina sontha gaddana
+Kandisikulu jesinaaru
+Electionlu paadugaanu eelatodi kaadugaalaa
+Nenu poyi vasthane
+Ayyaa batikite mallosthane
+Ayyaa… ayyaa
+Batikite mallosthane
+
+Poiraara chinni tandri
+Poiraara ratnamaa
+Poiraara naayi kodukaa`
+  },
+// 6
+{
+    title: "🎶 Mangli Teej ",
+    preview: "https://drive.google.com/file/d/17ummZv-5eh5wT1Pk10n4n9fH92DdV-K8/preview",
+    lyrics: `Teej yadine lamarey gore bhai thandema
+Gow galana pujare bamboliri mattimaa
+Teej yadine lamarey gore bhai thandema
+Gow galana pujare bambolini mattimaa
+Seethalara sandhe balane se vena nayakena jana punchare
+Gale gammathethi nava dhade teejey yaadi mera mara pujare
+Hasi kusi ema dhuk suk yema sai vajema dhokare
+Teej yadine lamarey gore bhai thandema
+Gow galana pujare bamboliri mattimaa
+
+Naami moti kumari chori nayakerey vaathe lethani
+Gama jaane maidhari butti lena ayire
+Suko chan matti chanan seva bahi gana ghoran
+Dhakoan chadana upavasa reri raa
+Meri maseri gharama haro barora kada kerecha
+Churumo chura lethani seva bhai ra bagu padrecha
+Sathi devarini bajarecha satha renukanu dhokarecha
+Thana mana thona bagaracha sali veja yaadi thu
+Dhola bandha chalore gaane mote hinchama
+Ladi galen nachera bhai banehi kushima
+Teej yadina lamare gore bai thandema
+Gow galana pujare bamboliri mattimaa
+
+Qwadi thel nuno cholan bhai beneh jammi par soan
+Yaadi thar nam lethanin thone pujecha
+Yadi bap thu jakelan manero vathe punchen
+Dhakale dev karen thona dhokecha
+Kadithari bhola bholen manera dukka polega
+Sari dhado sari ratho thare seva ma padega
+Teej yadi nava dhado kudage
+Bhai banga dhovel chadega
+Lei chala dappada vagega bagu padega
+
+Teej yadine lamarey gore bhai thandema
+Gow galana pujare bamboliri mattimaa
+Seethalara sandhe balane se vena nayakena jana punchare
+Gale gammathethi nava dhade teejey yaadi mera mara pujare
+Hasi kusi ema dhuk suk yema sai vajema dhokare
+Haro baro dekasore teej yadi gore udhar
+Gussa pure karo sayer chorijo thone dhoko ji udhar
+Haro baro dekasore teej yadi gore udhar
+Gussa pure karo sayer chorijo thone dhoko ji udhar`
+  },
+// 7
+{
+    title: "🎶 aaja deva aaja",
+    preview: "https://drive.google.com/file/d/18LGo8TNNQmhKgdxD76xgaGYtKow9I7vW/preview",
+    lyrics: `vātāpi gaṇapatiṁ bhajēhaṁ
+aa vātāpi gaṇapatiṁ bhajēhaṁ
+aa vātāpi gaṇapatiṁ bhajēhaṁ
+
+aaja deva aaja 
+neeku thomidhi rojula pooja
+aa kailasane vidisipetti
+galle galle nanne sutti
+poojallala padhilanga vundavayo
+nuv dj moothallala
+dhumdhamu cheyavavo
+vakrathunda bhojanindaa
+vundrane sallagunnda
+dhandiga neeku bhdhrapadamuna
+jaripemaya jai bolo ganesh 
+maharaj ki jai antevasthvo
+nuv bhakthi kandla chusi 
+nuv kushi aithavo
+
+neeku rangu lightlu eesi
+musthabu masthuga chesthamaya
+dolubhaja chesthamaya
+porugandhalathoti nuv aadipaadayo
+maa inti phalaraalu
+jara aaraginchayo
+
+aaa dhulpeta nundi ninnu 
+thechindhi modhalu..
+thechindhi modhalu..
+
+rooju panthulochi 
+sadhuvuthadu mantralu..
+sadhuvuthadu mantralu..
+
+thelarithe veyammaku 
+mogguthunte mykuu..
+
+salaarakunda deepam
+vettuthamu neeku
+rathiraithe bhajanaa
+jaathalekha jalana
+e gowrasthalu susinaa
+
+a chavithi nundi nuvvena 
+kairathabhadh ganeshaa
+katharnaak vuntai hamesha
+
+
+ninnu sunneki linelu kadatharaya
+ganapathi bhappa mooriya
+ante dharshanamu isthavu
+porullalathoti bhale famous ayithivo
+senu sankallala jallithe
+pantallello isthavaya
+
+ninnu nammithe ganapayya
+dhosthulekka nuvve mamu
+chusthuvuntavo ninnu thalachukunte saalu
+mamu kaasthuvuntavo
+
+aahhaaaaa
+
+pindi bhomaga puutina 
+pehalvanuve nuvvu
+pehalvanuve nuvvu
+edhutodini ekiliga 
+sudodhani chaatavu..
+sudodhani chaatavu..
+
+ammayyane manaku devullavannavu
+dhemaakunte dhuniya
+ellochani supavu
+sitraaina roopam
+elukadhemi paapam samajaithe
+chaluu ma pareshanu dhooram
+
+tankubandu meedhakochi
+ellipothavu ni lokam 
+aa gangamma ni ganipetalunchu
+gowrithanaya ma gandalu pogodathavo
+saagara voduna cheri  nuvvu 
+karigipothavu roo
+nii illu nuvvu jerithe
+ni panduga kosam chusthamaya
+dhumthadaka chesthamaya
+lambhodhara nuvvu
+ma sambho suuthudave
+
+ma bhavani ne nammi
+ni biddalni kaapadave....
+
+
+`
+  },
+// 8
+{
+    title: "🎶 Nandi Vahana",
+    preview: "https://drive.google.com/file/d/1fGyDxYb_FYLFwHvtVlEDMyRnDMbOvSIb/preview",
+    lyrics: `Nandi Vaahana..
+Naaga Bhooshanaa..
+Doosha dosha naasha vinaashana..
+Srushti kaarana..
+Nashta haaranaa..
+Tamo rajo sathvaguna vimochana..
+
+Maaghamaasamuna Krishnapakshamuna
+Chaturdasee Nadi jaamuraatirina
+Mahalingame Udbhavinchenata
+Brahma Vishnuvula Aham Anigenata
+Srushtiki Moolam Neevani Telisee
+Saayulabadi Nee Mahimaku Mokke
+Ade Maha shivaraatrai Velisenataa..
+
+Arevo Jangamaa Vibhoothi Lingamaa
+Pakkana Paarvathammaa Thalapai Gangammaa
+Arevo Jangamaa Medalo Sarpamaa
+Boodida Dehamaa Sigalo Sandamaamaa
+
+Srushtini Srushtinchaga Toligaa Puttaavataa
+Maaghaa Maasamunaa Mallee Puttaavataa
+Brahmaa Vishnuvulaa Taguvunu Teerchaavataa
+Maha sivaraatriga Mahilo Nilichaavataa
+
+Arey o Jangamaa Vibhoothi Lingama
+Pakkana Paarvathammaa Thalapai Gangamma
+Arey o Jangamaa Medalo Sarpamaa
+Boodida Dehamaa Sigalo Sandamaamaa
+
+| Taarare Taarare Re O..
+Taarare Taarare Re |2|
+
+Niduraa Aahaaram
+Annee Maanestaam
+Undee Upavaasam
+Chestaam Jaagaaram
+Gnaanam Nee Nethram
+Neethe Nee Sootram
+Moodo Nee Nethram
+Teristhe Chedu Bhasmam
+Jagame Nee Roopam
+
+| Taarare Taarare Re O..
+Taarare Taarare Re |2|
+
+Arevo Jangama Vibhoodi Lingama
+Pakkana Paarvatammaa Talapai Gangamma
+Arevo Jangama Medalo Sarpama
+Boodida Dehama Sigalo Sandamaama
+
+Srushtini Srushtinchaga Tholigaa Puttaavataa
+Maagha Maasamunaa Mallee Puttaavataa
+Brahma Vishnuvulaa Taguvunu Teerchaavataa
+Mahaa shivaraatriga Mahilo Nilichaavataa
+
+Arey o Jangama Vibhoodi Lingama
+Pakkana Paarvatammaa Talapai Gangamma
+Arey o Jangama Medalo Sarpama
+Boodida Dehama Sigalo Sandamaama
+
+Taarare Taarare Re |2|
+
+Aatmaa Paramaathmaa
+Antaa Nee Aataa
+Maalo Jeevudigaa
+Unnadee Neevantaa
+Brahmane Sikshinche
+Choopiraa Jagadeesha..
+Satyame Jeevamane..
+Chaatinaa Mahesha..
+Sundara Aakaaraa..
+
+Taarare Taarare Re |2|
+`
+  },
+// 9
+{
+    title: "🎶 Raghukula Tilakaa Raaraa..",
+    preview: "https://drive.google.com/file/d/13QUdin_SsEpzsgZN_OasLEEnCSV3v2DT/preview",
+    lyrics: `Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+
+Nuditina Kastoori Tilakam.. Chirunavvulu Chinde Adaram
+Nuditina Kastoori Tilakam.. Chirunavvulu Chinde Adaram
+Mallelu Maalalu Katti.. Nee Medalo Vaaseda Raaraa
+Mallelu Maalalu Katti.. Nee Medalo Vaaseda Raaraa
+
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+
+Vendi Ginnelo Paalu.. Avi Neekai Unchiti Raaraa
+Vendi Ginnelo Paalu.. Avi Neekai Unchiti Raaraa
+Allari Cheyaga Maani.. Nuv Araginchaga Raaraa
+Allari Cheyaga Maani.. Nuv Araginchaga Raaraa
+
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+
+Bugghana Chukka Petti.. Nee Kanulaku Kaatuka Petti
+Bugghana Chukka Petti.. Nee Kanulaku Kaatuka Petti
+Manasunu Maalanu Chesi.. Nee Medalo Vaaseda Raaraa
+Manasunu Maalanu Chesi.. Nee Medalo Vaaseda Raaraa
+
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Raghukula Tilakaa Raaraa.. Ninnetti Muddulaadedaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa
+Kosala Raamaa Raaraa.. Kousalya Raamaa Raaraa`
+  },
+// 10
+{
+    title: "🎶 Yellu yellamma rave",
+    preview: "https://drive.google.com/file/d/11EhUD3mHYTgNnQ_FsbtSdIFnfXRW_U7k/preview",
+    lyrics: `Yellu yellamma rave yellammo yellari thalli
+rave yellamma
+Yellu konnala dhaka yellammo yedulla
+jogamma yellamma
+Goundla adibiddavamma yellamma gavvalla
+dhanda niku yellamma
+Ni dhayi thammudochi yellamma ninnadi
+kollivanga yellamma
+Yedhummu bandari yellammo yenakamudi
+kattukoni yellamma
+Uthiuthi parupullali yellammo mettalu
+petturaye yellamma
+Shivuni biddavamma yellammo shivunelli
+Mathavamma yellamma
+Parvati biddavamma yellammo
+panchakalyanive yellamma
+Gourudi kodalamma yellammo
+gambiravanivamma yellammo
+Jemadhagni baryave yellammo
+jedaloravosinave yellammaaa....
+Puttalla puttinave yellammo puttathiru
+puttumope yellamma
+Gattu gattula joru yellammo
+Gajje suttu gajja pothu yellamma
+Aago suryunni pattinave maisammoo
+sock bottu pettinave mayamma
+Chandrunni pattinave maisammoo
+chandravanka thippinave maremma
+Jerripothu pattinave jejjammo Jedakoppu suttinave jogammaa Kali gajja gallumante yellamma dharani dhadharilenamma yellammaaaaa........
+Iga shulamu oka shetha yellammo surakathulu oka shetha yellamma
+Parusharamuduni kanna yellammo jambale
+chudu thalli yellamma ..
+Mavira mavira mavirala yellamma maviram
+kondallo mavirala yellamma
+Jejilakara setteki mavirala yellamma Kailasam gadhekki mavirala yellamma
+Jerripothula Patti mavirala yellamma
+janjaram ethithive mavirala yellamma
+Nagu pamula patti mavirala yellamma nadikattu kattithive mavirala yellamma
+Thrasu pamula patti mavirala yellamma
+thalakattu kattithive mavirala yellamma
+Mavira mavira mavirala yellamma maviram
+kondallo mavirala yellamma
+Yethadu gavvalamma yellammo thiruthiru
+jedalamma yellamma
+Vrasodu gavvalamma yellammo vallina
+jedalamma yellamma
+Soledu gavvalamma yellammo sovina
+jedalamma yellamma
+Thavvedu gavvalamma yellammo thakina jedalamma yellammaaaa…….
+Manedu gavvalamma yellammo Nidhi
+mallithina jedalamma yellamma
+Addedu gavvalamma yellammo nidhi ottina
+jedalamma yellammaaaa`
+  }
+ ];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src = src + "?autoplay=1&mute=1"; // muted autoplay works
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[200,230,210,220,210,200,190];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur=songDurations[index] || 210;
+  window.endTimeout=setTimeout(nextSong,dur*1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+document.getElementById('centerPlayer').onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="fearful back.html";
+}
+function openPlaylist(){
+  window.location.href="all back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

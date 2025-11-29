@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>😡 Let Go & Breathe</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #ffd8b5, #f9a88f);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+    animation: fadeIn 1.2s ease;
+  }
+
+  .container {
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 1.15em;
+    color: #444;
+    margin-bottom: 45px;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+
+  .music-btn {
+      padding: 16px 38px;
+    border: none;
+    border-radius: 18px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    min-width: 200px;
+    min-height: 55px;
+    color: #000;
+
+  }
+
+  /* Darker gradient colors for buttons */
+  .rain {
+    background: linear-gradient(135deg, #ff9f1c, #ff1b00);
+  }
+
+  .meditation {
+    background: linear-gradient(90deg, #5c8ed9, #1e73be);
+    color: #fff;
+  }
+
+  .peace {
+    background: linear-gradient(135deg, #ffb399, #ff7f50);
+  }
+
+  .music-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+  }
+
+  /* Back button */
+  .back-btn {
+    margin-top: 50px;
+    padding: 18px 46px;
+    font-size: 1.1em;
+    font-weight: 500;
+    border: none;
+    border-radius: 35px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #005bea, #00c6fb);
+    color: white;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+  }
+
+  .back-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>😡 Let Go & Breathe</h1>
+    <p>Pick the vibe that helps your heart heal and glow 🎵</p>
+
+    <div class="button-container">
+      <button class="music-btn rain" onclick="goTo('rain')">Release the fire🔥</button>
+      <button class="music-btn meditation" onclick="goTo('meditation')">Cool Down🧘</button>
+      <button class="music-btn peace" onclick="goTo('peace')">Spiritual Peace🌿</button>
+    </div>
+
+    <button class="back-btn" onclick="goBack()">⬅ Emotions</button>
+  </div>
+
+  <script>
+    function goTo(type) {
+      let url = "";
+      switch (type) {
+        case "rain":
+          url = "C:/Users/yarra/OneDrive/ドキュメント/html/music/angry-and-fire.html";
+          break;
+        case "meditation":
+          url = "C:/Users/yarra/OneDrive/ドキュメント/html/music/angry-and-cool.html";
+          break;
+        case "peace":
+          url = "C:/Users/yarra/OneDrive/ドキュメント/html/music/angry-and-spiritual.html";
+          break;
+        default:
+          alert("🎵 Page under construction!");
+          return;
+      }
+      window.location.href = url;
+    }
+
+    function goBack() {
+      window.location.href =  "file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/emotions%20h2.html";
+
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Reels</title>
+<style>
+:root{
+  --card-w: 42vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --dark-bg: #0d1117;
+  --accent: #facc15;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:radial-gradient(circle at 20% 20%, #1e293b, #0f172a);
+  color:white;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  position:relative;
+  width:100%;
+  overflow:hidden;
+}
+
+/* --- BUBBLES --- */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(250,204,21,0.25);
+  border-radius:50%;
+  animation:rise 14s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.5); opacity:0;}
+}
+
+/* --- CONTAINER --- */
+.container{
+  position:relative;
+  width:100%;
+  max-width:1500px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr;
+  gap:20px;
+  align-items:start;
+  justify-content:center;
+  margin:0 auto;
+  z-index:10;
+}
+
+/* LEFT NAV */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.25);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.35);
+  backdrop-filter:blur(6px);
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:var(--accent);
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+
+/* Make only the song list scrollable */
+.song-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  flex:1;
+  overflow-y:auto;
+  margin-bottom:12px;
+}
+
+.song-list li{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.1);
+  color:white;
+  font-weight:600;
+  text-align:center;
+  transition:background .2s ease, transform .15s ease;
+}
+.song-list li:hover{
+  background:var(--accent);
+  color:black;
+  transform:scale(1.03);
+}
+.song-list li.active{
+  background:var(--accent);
+  color:#000;
+}
+
+/* Buttons at the bottom, fixed */
+.nav-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+
+.back-btn, .playlist-btn{
+  width:100%;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 6px 15px rgba(0,0,0,0.25);
+  transition:transform .2s ease, box-shadow .3s ease;
+  color:#000;
+  background:var(--accent);
+}
+.back-btn:hover,
+.playlist-btn:hover{
+  transform:scale(1.05);
+  box-shadow:0 8px 18px rgba(0,0,0,0.4);
+}
+
+/* CENTER PLAYER */
+.center-player{
+  height:90vh;
+  background:rgba(255,255,255,0.08);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.35);
+  backdrop-filter:blur(8px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:2rem;
+  font-weight:700;
+  color:var(--accent);
+  text-shadow:0 0 20px rgba(250, 204, 21, 0.6);
+  letter-spacing:1px;
+  animation:glow 3s infinite alternate;
+}
+@keyframes glow{
+  from { text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent); }
+  to { text-shadow: 0 0 25px var(--accent), 0 0 45px var(--accent); }
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">🎶 Rain Mood 🌧️</h1>
+
+<div class="container">
+  <!-- LEFT NAV -->
+  <aside class="left-nav">
+    <h2>🎵Playlist(11) 🎶</h2>
+    <ul class="song-list" id="songList"></ul>
+
+    <div class="nav-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎶 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- CENTER PLAYER -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+</div>
+
+<script>
+// --- Bubbles animation ---
+const bubblesContainer=document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// --- SONGS ---
+const songs = [
+  {
+    title: "🎶 Relaxing Rain Sound",
+    preview: "https://drive.google.com/file/d/19Ee2L0i2H5s-Qp2WIG_qROFt4KGEykC4/preview"
+  },
+  {
+    title: "🎶 Rain Sound on Tent",
+    preview: "https://drive.google.com/file/d/1HsgMeLw9_u6HzMnS7JBYUrCd2qvPpDtq/preview"
+  },
+  {
+    title: "🎶 Deep Focus and Relaxing",
+    preview: "https://drive.google.com/file/d/1y8oQjywqpdtWyxhYNVCm0-y4hQnPqVwi/preview"
+  },
+  {
+    title: "🎶 Rainy Evening",
+    preview: "https://drive.google.com/file/d/1DSGo-ohEMn-0iEmp_1eME2oJwLeD0PUX/preview"
+  },
+  {
+    title: "🎶 Lofi Hiphop",
+    preview: "https://drive.google.com/file/d/11hG5a2ZlXhI5TI22bwTKEdPRSl1xeFIh/preview"
+  },
+  {
+    title: "🎶 Chinese Zen Music",
+    preview: "https://drive.google.com/file/d/1U03-Z7whElkS4j_A2LuzDIvQovwVEmKJ/preview"
+  },
+  {
+    title: "🎶 Umbrella and Nature Sounds with Rain",
+    preview: "https://drive.google.com/file/d/1xUZzrLNpHj5WpBrLx0hxs4lE16CMR1Vf/preview"
+  },
+  {
+    title: "🎶 Relaxing Rain Sound with Piano",
+    preview: "https://drive.google.com/file/d/17FtIPFW2r4LAyp2Z9LfuIiceHdGB3T6i/preview"
+  },
+  {
+    title: "🎶 Ice cube Rain in Forest",
+    preview: "https://drive.google.com/file/d/1CrgkPZ_K3m659ncO5NyCJodlmosjn1PX/preview"
+  },
+  {
+    title: "🎶 Rain Ice Cubes",
+    preview: "https://drive.google.com/file/d/1LwxJ_-AsrnhUZUIKN99f5XJIDwWK96fr/preview"
+  },
+  {
+    title: "🎶 Rainy Day Ice Cubes",
+    preview: "https://drive.google.com/file/d/19RqEBmW0tWJMuEYzwhk99L4D_7FM5-Y6/preview"
+  }
+];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const centerPlayer=document.getElementById('centerPlayer');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+});
+
+let currentIndex=0;
+let playerFrame;
+
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src=src+"?autoplay=1&mute=0";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  iframe.id="songFrame";
+  playerWrap.appendChild(iframe);
+  playerFrame=iframe;
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[210,240,200,230,180,210,190,200,210,220];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur = songDurations[index] || 210;
+  window.endTimeout = setTimeout(nextSong, dur * 1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-list li').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-list li[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+centerPlayer.onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/stressed%20back.html";
+}
+function openPlaylist(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>😤 Ease Your Mind</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #c0f5f7, #f3d2e9);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+    animation: fadeIn 1.2s ease;
+  }
+
+  .container {
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 2.6em;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 1.1em;
+    color: #444;
+    margin-bottom: 45px;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+
+  .music-btn {
+    padding: 16px 38px;
+    border: none;
+    border-radius: 18px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    min-width: 200px;
+    min-height: 55px;
+    color: #000;
+  }
+
+  /* Button gradients */
+  .meditation {
+    background: linear-gradient(to right, #ffe6a3, #ff9e2f); /* light → dark */
+  }
+
+  .flute {
+    background: linear-gradient(to right, #1a82ff, #a8e6ff); /* dark → light */
+  }
+
+  .lofi {
+    background: linear-gradient(to right, #ffe1c2, #ff8650); /* light → dark */
+  }
+
+  /* Hover glow effect */
+  .music-btn:hover {
+    transform: scale(1.07);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Back button */
+  .back-btn {
+    margin-top: 50px;
+    padding: 18px 50px;
+    font-size: 1.1em;
+    font-weight: 500;
+    border: none;
+    border-radius: 35px;
+    cursor: pointer;
+    background: linear-gradient(to right, #89d0ff, #0074e4);
+    color: white;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+  }
+
+  .back-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+  }
+
+  /* Smooth fade in */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>😤 Ease Your Mind</h1>
+    <p>Pick the vibe that helps your heart heal and glow 🎵</p>
+
+    <div class="button-container">
+      <button class="music-btn meditation" onclick="goTo('meditation')">Mindful Meditation 🎧</button>
+      <button class="music-btn flute" onclick="goTo('flute')">Rain Mood 🌧️</button>
+      <button class="music-btn lofi" onclick="goTo('lofi')">Chill Lofi Beats 🎶</button>
+    </div>
+
+    <button class="back-btn" onclick="goBack()">⬅ Emotions</button>
+  </div>
+
+  <script>
+    function goTo(type) {
+      let url = "";
+      switch (type) {
+        case "meditation":
+          url = "C:/Users/yarra/OneDrive/ドキュメント/html/music/stress-and-mindful.html";
+          break;
+        case "flute":
+          url = "C:/Users/yarra/OneDrive/ドキュメント/html/music/stress-and-rain.html";
+          break;
+        case "lofi":
+          url = "C:/Users/yarra/OneDrive/ドキュメント/html/music/stress-and-beats.html";
+          break;
+        default:
+          alert("🎵 Page under construction!");
+          return;
+      }
+      window.location.href = url;
+    }
+
+    function goBack() {
+      window.location.href = "file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/emotions%20h2.html";
+    }
+  </script>
+</body>
+</html>

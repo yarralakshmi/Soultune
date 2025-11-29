@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>💪 Motivational Mix — Auto Play + Lyrics + Bubbles</title>
+<style>
+:root{
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  background-size:400% 400%;
+  animation:gradientShift 15s ease infinite;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Bubbles */
+.bubbles{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:0;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  width:20px; height:20px;
+  background:rgba(255,255,255,0.25);
+  border-radius:50%;
+  animation:rise 10s infinite ease-in;
+}
+@keyframes rise{
+  0%{transform:translateY(0) scale(1); opacity:1;}
+  100%{transform:translateY(-120vh) scale(1.6); opacity:0;}
+}
+
+/* Layout */
+.container{
+  position:relative;
+  width:96%;
+  max-width:1800px;
+  display:grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap:24px;
+  align-items:start;
+  z-index:10;
+}
+
+/* Left nav */
+.left-nav{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  display:flex;
+  flex-direction:column;
+}
+.left-nav h2{
+  color:#00e6ff;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:1.1rem;
+}
+.song-list{
+  list-style:none;
+  padding:0;
+  overflow-y:auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Song items */
+.song-item{
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.08);
+  color:#00e6ff;
+  font-weight:600;
+  text-align:center;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover{
+  background:rgba(255,255,255,0.15);
+  box-shadow:0 0 8px rgba(255,255,255,0.15) inset;
+}
+.song-item.active{
+  background:linear-gradient(135deg,#00e6ff,#00ffa3);
+  color:#000;
+  box-shadow:0 0 10px rgba(255,255,255,0.3) inset;
+}
+
+/* Buttons */
+.bottom-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:auto;
+}
+.bottom-buttons button{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform 0.15s ease, filter 0.3s ease;
+}
+.bottom-buttons button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+.back-btn{
+  background:linear-gradient(135deg,#a1c4fd,#c2e9fb);
+}
+.playlist-btn{
+  background:linear-gradient(135deg,#ffecd2,#fcb69f);
+}
+
+/* Center player */
+.center-player{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:12px;
+  box-shadow:0 16px 50px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.center-player .iframe-wrap{
+  width:100%;
+  height:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  cursor:pointer;
+  transition:opacity 0.4s ease;
+}
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Lyrics panel */
+.lyrics-panel{
+  height:90vh;
+  background:rgba(0,0,0,0.6);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  overflow:auto;
+}
+.lyrics-panel h3{
+  color:#00ffa3;
+  text-align:center;
+  margin-bottom:8px;
+}
+.lyrics-block{
+  display:none;
+  white-space:pre-line;
+  color:#fff;
+  line-height:1.6;
+  font-size:0.95rem;
+}
+.lyrics-block.active{display:block}
+
+/* Heading */
+.heading{
+  position:fixed;
+  top:20px;
+  right:50%;
+  transform:translateX(50%);
+  z-index:99;
+  font-size:1.5rem;
+  font-weight:700;
+  color:#00e6ff;
+  text-shadow:0 2px 10px rgba(0,0,0,0.7);
+  letter-spacing:1px;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  .container{grid-template-columns: 1fr; gap:12px;}
+  .left-nav, .lyrics-panel{display:none}
+  .center-player{height:calc(100vh - 36px); border-radius:0}
+  .heading{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating Bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">Uplifting / Positive Songs💖🎶</h1>
+
+<div class="container">
+  <!-- Left Sidebar -->
+  <aside class="left-nav">
+    <h2>🎵 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button class="back-btn" onclick="goBack()">⬅ Back</button>
+      <button class="playlist-btn" onclick="openPlaylist()">🎧 Open Playlist</button>
+    </div>
+  </aside>
+
+  <!-- Center Video Player -->
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <!-- Lyrics Sidebar -->
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Background bubbles
+const bubblesContainer=document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=8+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// SONG DATA (10 songs)
+const songs=[
+  {title:"🎶 Kadallale",preview:"https://drive.google.com/file/d/1u6I97y9gl13iLcPJTgWn4XpHOUlu4WpY/preview",lyrics:`Kadalalle Veche Kanule
+Kadhilenu Nadhila Kalale
+
+Kadalalle Veche Kanule
+Kadhilenu Nadhila Kalale
+Vodi Cheri Okatai Poye..
+
+Vodi Cheri Okatai Poye
+Theeram Kore Praayam
+
+
+Viraham Pongele
+Hrudhayam Oogele
+Adharam Anchule
+Madhuram Korele
+
+
+Antheleni Yedho Thaapam Yemitilaa
+Nuvve Leka Vedhisthundhe Vesavilaa
+Chentha Cheri Sedhatheera Praayamilaa
+Cheyi chaachi Koruthundi Saayamilaa
+
+Kaalaalu Maarinaa
+Nee Dhyaasa Maarunaa
+Adigindhi Mohame
+Nee Thodu Ilaa Ilaa
+
+
+Viraham Pongele
+Hrudhayam Oogele
+Adharam Anchule
+Madhuram Korele...`},
+  {title:"🎶 Adhento Gaani Vunnapaatuga",preview:"https://drive.google.com/file/d/1QbXwTuUZpuynyQjV8h92bzob_SwLHGro/preview",lyrics:`Adhento gaani vunnapaatuga
+Ammayi mukku meedha neruga
+Tharaala naati kopamantha
+Aaa….. Erupega
+
+Naakantu okkaraina leruga
+Nannantukunna taarave nuvaa
+Naakunna chinni lokamantha
+Neee… Pilupega
+
+Teri paara chooda
+Saage dhoorame
+Edi edi chere chotane
+Saage kshanamu laagene
+Venake manani choosene
+Chelimi cheyamantu korene
+Oooo.. Ooooo…
+
+Vegamadigi choosene
+Alupe manaki ledhane
+Velugulaina velisipoyene
+Oooo.. Ooooo…
+
+Maa jodu kaaga
+Vedukega vekuveppudo theleeduga
+Aaa.. chandamama
+Mabbulo daagipodaa
+Eh vela paala meeku leda
+Antu vaddane antunnada
+Aa siggulona arthame maaripodaa
+
+Eri kori chera saage kaugile
+Edi edi chere chotane
+Kaugiliruku aayene
+Thagile pasidi praaname
+Kanulalone navvu poosene
+Oooo.. Ooooo…
+
+Lokamichata aagene
+Mugguro prapanchamaayene
+Merupu murupu thone kalisene
+Oooo.. Ooooo…
+
+Kaalametula aagene
+Dorike varaku aagade
+Okaru okaru gaane vidichene
+
+Doorametula doorene
+Manake thelise lopale
+Samayame maaripoyene
+Oooo.. Ooooo…`},
+  {title:"🎶 Padipoya Padipoya",preview:"https://drive.google.com/file/d/1KI_JPMIuvT0quaX8bm6KeZY1GhGdLouM/preview",lyrics:`Ho Merupalle Merisi Urumalle Urimi
+
+Vanalle Kurisavey Nizama Ledha Kala
+
+Ho Godugalle Thadisi Varadhalle Uriki
+
+Neelokey Dhookane Nalonchi Nene Ila
+
+Kallathoti Kallaki Enni Choopu Lekalo
+
+Gundethoti Gundekenni Mouna Bhashalo
+
+Padipoya Padipoya Padipoya, Nee Premalo
+
+Padipoya Padipoya Padipoya, Ee Hayilo
+
+Padipoya Padipoya Padipoya Nee Premalo
+
+Padipoya Padipoya Padipoya Ee Hayilo
+
+Nelavankai Veliginde Nee Pedavulapai Chirunavu
+
+Aa Vanke Chalu Kada Nanu Neetho Ranivu
+
+Chali Mantai Tharimindhe
+
+Nee Vechani Oopiri Na Vaipu
+
+Adhi Modhalu Neekosam Roju Padigapu
+
+Kola Kalla Chinna Konetlona
+
+Rangu Chepa Laga Eedhaney
+
+Andhamantukunna Chempallona
+
+Dhora Siggu Laga Nenu Marane
+
+Padipoya Padipoya Padipoya Nee Premalo
+
+Padipoya Padipoya Padipoya Ee Hayilo
+
+Enthaina Pogadochey Ninu Chekkina Devudi Silpakala
+
+Pranaley Ivochey Neeke Kanukala
+
+Bhadranga Dhachochey Ninu Rangula Bommala Sanchikala
+
+Muripenga Chadavoche Roju Roju Ala
+
+Galikooguthunna Mungurulemo
+
+Konte Saigale Chesthunte
+
+Ninnu Hathukunna Atharulevo
+
+Guppumantu Gunde Meeti Pothunte,
+
+Padipoya Padipoya Padipoya Nee Premalo
+
+Padipoya Padipoya Padipoya Ee Hayilo
+
+Padipoya Padipoya Padipoya Nee Premalo
+
+Padipoya Padipoya Padipoya Ee Hayilo.`},
+  {title:"🎶 Ori Devudo",preview:"https://drive.google.com/file/d/1kUcBjKmeWNKQ6V-4DMqfQCsU-AFqk9Sd/preview",lyrics:`Hey onda ton la dynamite gullelona pelinattu
+Tondarlona century ni okka ball lo kottinattu
+Hey gollu gollumantunte pranam
+Dil-u vasinattu kucchikunde baanam
+Hey gollu gollumantunte pranam
+Dil-u vasinattu kucchikunde baanam
+Naa heart beat-u ne fast speed-u ga
+Marchinave pilla what to do
+Ori devudo edemi gola ro
+Ori devudo oho edemi gola ro oho
+
+Mobbulona varshamantha tappulona gurisinattu
+Mobbulona tippa rotte dorikinattu
+Hey tulli tulli addinde andam
+Are gallu manta pagilinde addam
+Naa night muddulo light vasinattu
+Bright ayye ro what to do
+Ori devudo edemi gola ro
+Ori devudo oho edemi gola ro oho
+
+Hey vontilona veedi kulavidaniki
+Kilometer antha thermometer-e avasaram
+Pedivilona matla rayadaniki
+White house antha white paper-e avasaram
+Hey manasulona premani daachupettadaaniki
+Hey manasulona premani daachupettadaaniki
+Lokamantha jaagame avasaram
+Na pulse rate ni dollar rate la
+Penchinavura what to do
+Ori devudo edemi gola ro
+Ori devudo oho edemi gola ro oho
+
+Naa birth date-u ne marechina
+First ninnu kalasukunna meet-u
+Maravane maravane
+Naa swantha peeru neenu marechina
+Nee cell phone number-e
+Maravane maravane
+Naalo praname nannu vadali pettina
+Naalo praname nannu vadali pettina
+Pattukunna cheyi odilipettane
+Life long account ki password la
+Maarinavu ro what to do
+Ori devudo edemi gola ro
+Ori devudo oho edemi gola ro oho`},
+
+  {title:"🎶 What's Up Antundhi",preview:"https://drive.google.com/file/d/1GqdN_GyPrHRfXOMuhGcXg2ap5OwqOHhT/preview",lyrics:`Whats up antu nee konte
+Thalapu nanne kadipene
+Hurryup antu nee prema
+Pilupu nanne pilichene
+Wherever nenunna nee
+Feverlo vunna..Oo
+Whatever chesthunna
+Na heartu lo beat u
+I love girl antunte vintunna
+
+Whats up antu nee konte
+Thalapu nanne kadipene
+Hurryup antu nee prema
+Pilupu nanne pilichene
+
+
+Sunrise nunchi sunset daaka
+Mera dil ka fm channel lona
+Neede neede chappudu
+Bedlight aina moonlight laaga
+Naakanipsthunde..
+
+Neetho unte i don’t need a chandrudu
+Nee chuttu tirige satellite laaga
+Nidurapode na mind u
+Rojantha velige filament laaga
+Crazy oohallo nee topic ayye music u
+
+Whats up antu nee konte
+Thalapu nanne kadipene
+Hurryup antu nee prema
+Pilupu nanne pilichene
+
+
+
+You r the one for me
+There i can call in my own
+Feeling that keeps filling me
+Your dreams so unknown
+U and i always be together in love
+Just hold me tight in your arms
+Do it right now
+
+Popcorn thinna pop song vinna
+Ye konchem kuda ekkatlede
+L o v e kick lo
+Imax aina inox aina
+Nee cutout e mari chupistunde
+Disturb chese lekkalo
+
+Neevalle life change ayyinde
+Ilayaraja melody laa
+Kalala monsoon modalayyinde
+Rendu kannullo na lokam
+Motham tadisela
+
+Whats up antu nee konte
+Thalapu nanne kadipene
+Hurry up antu nee prema
+Pilupu nanne pilichene`},
+  {title:"🎶 The Karma Theme(U-Turn)",preview:"https://drive.google.com/file/d/1l40trQFbHhC6GKlhU5iGjlm2ExqAWc6o/preview",lyrics:`Dishalni marchukunna
+Yelantu dharilo pothunna
+Manassu maaruthunna
+Gathala gnapakam yedhaina
+
+Sadhaa nuvve kadha prathikshanaana
+Sadhaa yelaaga choosina
+Santhoshala roopam nuvve
+Kadhilina kanneeti dhaarave
+Nadipina baanam nuvve
+Musirina bhayaala needave
+
+Marokka sari choodu
+
+kalallo theluthunna
+Aveveo prashnale lolona
+Elanti oohalaina
+Nuvvaina pathrale ennaina
+
+Edho theleeni prayanamedho
+Eto mugimpanedheto
+
+Vethikina nizam nuvve
+Kalisina prapanchamu nuvve
+Nadichina dhaari nuvve
+Nilichina theeranivi nuvve
+
+Marokka sari choodu
+
+Nuvve ila prathi kadha nuvvega
+Nuvvai malli anni raava yedhuruga
+
+Nuvve ila prathi kadha nuvvega
+Nuvvai malli anni raava yedhuruga
+
+Sadhaa nuvve kadha prathikshanaana
+Sadhaa yelaaga choosina
+(Nuvve ila prathi kadha nuvvega
+Nuvvai malli anni raava yedhuruga)
+
+Marokka sari choodu`},
+  {title:"🎶 Galivaluga",preview:"https://drive.google.com/file/d/1wdj0Mky_krmK18ZYJLHQP-PtCTlruqu4/preview",lyrics:`Gaali Vaaluga...
+O Gulabi Vaali...
+Gaayam Ainadi
+Na Gundeki Thagili
+Thapinchi ponaaaaaaaa!
+Prahtikshanam Ilaga Neekosam
+Tharinchi ponaaaaaaaa..
+Cheli Ila Dorikithey Nee Sneham
+
+Em Chesavey Mabbulanu Puvvuloo Thadipi
+Thena jadilo Munchesaave
+Gaalulaku Gandham Raasi
+Paiki Visuruthave
+Em Chustavey Merupu churakatthulne
+Doosi Paduchu Yedalo Dinchesave
+Thalapune Thunakalu Chesi
+Thapana Penchuthave
+
+
+Nadiche Harivilla
+Nanu Nuvillaa guripeduthunte Ela
+Anu Vanu Vuna Vila Vila
+manadaa praanam Niluvella
+Nilu Nilu Nilaladu Pilla
+Gaalipatamlaa Egarake ala
+Sukumari Sogasunala
+Ontariga Vodalaala...
+
+
+Chustheney
+Gaali Vaaluga...
+O Gulabi Vaali...
+Gaayam Ainadi
+Na Gundeki Thagili
+Thapinchi ponaaaaaaaa!
+Prahtikshanam Ilaga Neekosam
+Tharinchi ponaaaaaaaa..
+
+Cheli Ila Dorikithey Nee Sneham
+
+hmmm! hmmm! hmmm! mmm!!!
+
+
+Hmmm! Kora Kora Kopamela
+Chura Chura Chupulela
+Manohari Madipona
+Antha udikisthe
+Are Ani Jaali Padavem
+Papam Kade Preyasi
+Sare Ani Challabadavem
+Osi Pisaachiiiii!
+
+Uhu Ala Thippukuntu
+Thoolipoke Oorvasi
+Aha Ala Navvuthaavem
+Meesam Melesi ..
+Ennallinkaa Oorike Oohallo
+Untaam Penkipilla
+Chaalle inka
+Maanuko mundoo Venakaa
+Chusukoni Pantham
+Aalochiddaam chakkagaa Koorchoni
+Charchiddaamm Chaalu Yuddham
+Raajikoddaam Koddigaa Kalisosthe
+Neekevitanta Kashtam
+
+Nadiche Harivilla
+Nanu Nuvillaa gripeduthunte Ela
+Anu Vanu Vuna Vila
+Vilamanadaa praanam Niluvella
+Nilu Nilu Nilaladu Pilla
+Gaalipatamlaa Egarake ala
+Sukumari Sogasunala
+Ontariga Vodalaala...
+
+Em Cheyalo Le
+Gaali Vaaluga...
+O Gulabi Vaali...
+Gaayam Ainadi
+Na Gundeki Thagili
+Thapinchi ponaaaaaaaa!
+Prahtikshanam Ilaga Neekosam
+Tharinchi ponaaaaaaaa..
+
+Cheli Ila Dorikithey Nee Sneham..`},
+  {title:"🎶 My heart is Beating",preview:"https://drive.google.com/file/d/1BtRTsopOJMzMkRcv8SeDVO-D99SIOsID/preview",lyrics:`My heart is beating adhola
+Thelusukovaa.. adhi
+Yennaali waiting anelaa
+Tharumuthondi.. madhi
+Pedhavipai palakadhe
+Manasulo vunna sangathi
+Kanulalo vethikithe dhorukuthundhi
+Tea spoon ton baruvavuthundhe
+Full moon nannu udikisthundhe
+Cloud nine kaalla kindhakochindhe
+Land mine gundelo pelindhe
+
+My heart is beating adhola
+Thelusukovaa.. adhi
+Yennaali waiting anelaa
+Tharumuthondi.. madhi
+
+Hey I wanna be with u forever
+Hey I wanna live with u foerever
+
+Penu thufaanu yedhaina
+Merupu dhadi chesindha
+Munupuleni maikana
+Madhini munchi poyindha
+Urikine peragaduga oopiri salapani baramila
+Ne unike vunnadhiga naalo niluvella
+Talapulalo chorabaduthu gajibiji ga chelaregala
+Thalagada tho talabaduthu
+Thellarlu ontariga vegaala
+
+Cellphone nee kaburu thesthunte
+Stungun moginattu vuntundhe
+Crompton fanu gaali visthunte
+Cyclone thaki nattu vuntundhe
+
+My heart is beating adhola
+Thelusukovaa.. adhi
+Yennaali waiting anelaa
+Tharumuthondi.. madhi
+
+Yepudela thegisthano
+Na meedhe naaku anumanam
+Matallo paikanesthano
+Ne meedha vunna abhimaanam
+
+Twara twaraga thariminadhe
+Padha padha padha mani paduchu radham
+Yedha layalo mudhirinadhe
+Madhanudi chilipi ratham
+
+Gusa gusa ga pilichinadhe
+Manasuna virisina kalala vanam
+Taha tahagaa tariminadhe
+Dammaru dammani thule aanandam
+Freedom dhorikinattu gaalullo
+Welcome pilupu vinipistundhe
+Baanam vesinattu yedhalo
+Praanam doosukelli potundhe
+
+My heart is beating adola
+Telusukovaa.. adhi
+Ennaali waiting anelaa
+Tharumuthondi.. madhi`},
+  {title:"🎶 Back Packlo",preview:"https://drive.google.com/file/d/1k90kVy9AGqll9q7irkB5wqKWxp68saGH/preview",lyrics:`Rock on bro andhi selavu roju
+Gadipedham life king size
+Okke gadilo ukkapotha chaalu
+Gadi dhaatali kallu kaalu kalalu
+
+Ye dikkulo yemunnado
+Vetaadi pogu chesukundham kushi
+Mannatalo chantodila
+‘Aa’ aanali nedu manalo manishi
+
+Oh Oh Oh.. Oh O..
+
+Manasu ippudu mabbulo vimanam
+Nelaina ningitho samanam
+Mathullo idho kotha konam
+Kotha yethullo yeguruthondi pranam
+
+Aanandamo aascharayamo
+Yedhoti pondaleni samayam vrudha
+Utthejamo ullasamoo..
+Ivvalti navvu rangu vere kadha..
+
+Oh Oh Oh.. Oh O..
+
+Manamantha jeans pant rushulu
+Backpack lo baruvu ledhu aasalu
+Vinaledha modati manishi kadhalu
+Aala bathikedham o nindu reyi pagalu
+
+Idhi manam idhe manam
+Kshanaalini jeevithanga marchegunam
+Idhe dhanam ee indhanam
+Raanunna repu vaipu nadipe balam`},
+  {title:"🎶 Baitikochi Chuste",preview:"https://drive.google.com/file/d/1O2shbJ0wc54RFmB4bleG-dVNgvu8wKGZ/preview",lyrics:`Baitikochi Choosthe Time Emo 3’0 Clock
+Intikelle 12B Route Mottham Road Block
+
+Baitikochi Choosthe Time Emo 3’0 Clock
+Intikelle 12B Route Mottham Road Block
+
+Oye Nee Chethikunna Bangles Ye
+Thalamesena Sandles Ye
+Walk Way Lo Choosthe
+Puvvula Rekkalu Full Ga Kappese
+Corner Lo Coffee Shop
+Vedi Vedi Ga Whistle Ese
+Bus Kitiki Dhaggara
+College Student Phone Lo Moge
+FM Lo Evaro Paadithe
+Vollantha Endhuko Voogene
+Apple Pandula Sooryude
+Aeroplane La Naa Gunde
+Thelindhe Gaalilo Mabbula
+Jaarindhe Nelapai Needala
+Volle Gucchele Sudden Ga
+Challagaale Villian Laa
+
+Baitikochi Choosthe Time Emo 3’0 Clock
+Intikelle 12B Route Mottham Road Block
+
+Baitikochi Choosthe Time Emo 3’0 Clock
+Intikelle 12B Route Mottham Road Block
+
+Nee Pakka Nunna Vela Car Horn Kooda
+Classical Music Aa
+Ee Mandutenda Kooda AC Jalluthondhi
+Nee Navvuloni Magic Aa
+Taxi Hire Chesi Nuvvu
+Beramaaduthunte Cute Gundhi Basic Ga
+Breaks Vesinappudalla Nee Bugga Nannu Thaaki
+Sorry Cheppe Naazugga
+Nuvvunna Kitiki Ye Vaipo Vethiki
+Whatsapp Chesthava
+Mabbulni Kadhipi Mohamaata Petti
+Chandhrudni Thesthaaga
+
+Baitikochi Choosthe Time Emo 3’0 Clock
+Intikelle 12B Route Mottham Road Block
+
+Baitikochi Choosthe Time Emo 3’0 Clock
+Intikelle 12B Route Mottham Road Block
+
+FM Lo Evaro Paadithe
+Vollantha Endhuko Voogene
+Apple Pandula Sooryude
+Aeroplane La Naa Gunde
+Thelindhe Gaalilo Mabbula
+Jaarindhe Nelapai Needala
+Volle Gucchele Sudden Ga
+Challagaale Villian Laa`}
+];
+
+const songList=document.getElementById('songList');
+const playerWrap=document.getElementById('playerWrap');
+const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+const centerPlayer=document.getElementById('centerPlayer');
+
+songs.forEach((s,i)=>{
+  const li=document.createElement('li');
+  li.textContent=s.title;
+  li.className='song-item';
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement('div');
+  block.className='lyrics-block';
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src=src+"?autoplay=1&mute=0";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
+
+const songDurations=[200,230,210,220,210,200,190,210,200,220];
+function simulateVideoEnd(index=currentIndex){
+  clearTimeout(window.endTimeout);
+  const dur = songDurations[index] || 210;
+  window.endTimeout = setTimeout(nextSong, dur * 1000);
+}
+
+function selectSong(index){
+  document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
+  document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
+  const s=songs[index];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=index;
+  document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`lyrics-${index}`).classList.add('active');
+  lyricsTitle.textContent=s.title;
+}
+
+function nextSong(){
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+}
+
+centerPlayer.onclick=()=>nextSong();
+
+function goBack(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/sad%20back.html";
+}
+function openPlaylist(){
+  window.location.href="file:///C:/Users/yarra/OneDrive/ドキュメント/html/music/all%20back.html";
+}
+
+selectSong(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>🎧 Calm Flow — Motivational Mix</title>
+<style>
+:root {
+  --card-w: 45vw;
+  --card-h: 88vh;
+  --radius: 18px;
+  --nav-w: 280px;
+  --lyrics-w: 340px;
+
+  /* Colors from Calm Flow theme */
+  --accent: #a5f3fc;
+  --accent2: #c084fc;
+  --accent3: #f9a8d4;
+}
+
+/* === Global === */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+  background-size: 300% 300%;
+  animation: gradientShift 10s infinite alternate;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  position: relative;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* === Floating Bubbles === */
+.bubbles {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+.bubble {
+  position: absolute;
+  bottom: -100px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  animation: rise 12s infinite ease-in;
+}
+@keyframes rise {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-120vh) scale(1.8); opacity: 0; }
+}
+
+/* === Layout === */
+.container {
+  position: relative;
+  width: 96%;
+  max-width: 1800px;
+  display: grid;
+  grid-template-columns: var(--nav-w) 1fr var(--lyrics-w);
+  gap: 24px;
+  z-index: 10;
+}
+
+/* === Left Navigation === */
+.left-nav {
+  height: 90vh;
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+}
+.left-nav h2 {
+  color: var(--accent3);
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  text-shadow: 0 0 10px rgba(255,255,255,0.6);
+}
+.song-list {
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* === Song items === */
+.song-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.15);
+  color: var(--accent);
+  font-weight: 600;
+  text-align: center;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.song-item:hover {
+  background: rgba(255,255,255,0.25);
+  box-shadow: 0 0 10px rgba(255,255,255,0.3) inset;
+}
+.song-item.active {
+  background: linear-gradient(135deg, var(--accent2), var(--accent3));
+  color: black;
+  box-shadow: 0 0 15px rgba(255,255,255,0.5);
+}
+
+/* === Buttons === */
+.bottom-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+.bottom-buttons button {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  color: black;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--accent);
+  transition: transform 0.15s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.bottom-buttons button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+}
+
+/* === Center Player === */
+.center-player {
+  height: 90vh;
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.center-player .iframe-wrap {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  transition: opacity 0.4s ease;
+}
+.center-player iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* === Lyrics Panel === */
+.lyrics-panel {
+  height: 90vh;
+  background: rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  overflow: auto;
+}
+.lyrics-panel h3 {
+  color: navy blue;
+  text-align: center;
+  margin-bottom: 8px;
+  text-shadow: 0 0 10px rgba(255,255,255,0.6);
+}
+.lyrics-block {
+  display: none;
+  white-space: pre-line;
+  color: black;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+.lyrics-block.active { display: block; }
+
+/* === Heading === */
+.heading {
+  position: fixed;
+  top: 20px;
+  right: 50%;
+  transform: translateX(50%);
+  z-index: 99;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: black;
+  text-shadow: 0 0 25px var(--accent2), 0 0 45px var(--accent3);
+  letter-spacing: 1px;
+}
+
+/* === Responsive === */
+@media (max-width:980px) {
+  .container { grid-template-columns: 1fr; gap: 12px; }
+  .left-nav, .lyrics-panel { display: none; }
+  .center-player { height: calc(100vh - 36px); border-radius: 0; }
+  .heading { display: none; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="bubbles" id="bubbles"></div>
+
+<h1 class="heading">💫Refreshing Mass Beats 🌈</h1>
+
+<div class="container">
+  <aside class="left-nav">
+    <h2>🎵 Playlist (10)</h2>
+    <ul class="song-list" id="songList"></ul>
+    <div class="bottom-buttons">
+      <button onclick="goBack()">⬅ Back</button>
+      <button onclick="openPlaylist()">🎧 Playlist</button>
+    </div>
+  </aside>
+
+  <main class="center-player" id="centerPlayer">
+    <div class="iframe-wrap" id="playerWrap"></div>
+  </main>
+
+  <aside class="lyrics-panel" id="lyricsPanel">
+    <h3 id="lyricsTitle">Lyrics</h3>
+    <div id="lyricsHolder"></div>
+  </aside>
+</div>
+
+<script>
+// Floating Bubbles
+const bubblesContainer = document.getElementById('bubbles');
+for(let i=0;i<25;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const size=Math.random()*20+10;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*100+'%';
+  b.style.animationDuration=10+Math.random()*8+'s';
+  b.style.animationDelay=Math.random()*5+'s';
+  bubblesContainer.appendChild(b);
+}
+
+// Song Data
+const songs=[
+  {title:"🎵 Palsar Byku",preview:"https://drive.google.com/file/d/1kbOYec63ylWQcMnsPezMhjenXDM3r-5e/preview",lyrics:`Chimpuru Juttu Daanni
+Sevulerukana Chuttadaanni
+Chethilaggipette Daanni
+Ungaraala Metta Daanni
+
+Nenattaantittaanti Aadadaanni Kaadhu Baavo
+Pulsar Bike Midha RaaRaa Baava
+Nenattaantittaanti Aadadaanni Kaadhu Baavo
+Pulsar Bike Meeda RaaRa Baava
+
+College Timelona… Kannugotti Pilisinaavu
+Nenu Raanupo Ante… Kallu Errajesinaavuro
+
+Nenattaantittaanti Aadadaanni Kaadhu Baavo
+Pilavagaane Nenu Raanu Baava
+Nenattaantittaanti Aadadaanni Kaadhu Baavo
+Pilavagaane Nenu Raanu Baava
+
+Pancha Maamidi Thota Kaada
+Kallathoti Saiga Chesi
+Mallepoolu Chupinchi
+Cheyyi Patti Laaginaavuro
+
+Nenattaantittaanti Aadadaanni Kaadhu Baavo
+Neelaantodiki Sanuvivvanu Baava
+Nenattaantittaanti Aadadaanni Kaadhu Baavo
+Neelaantodiki Sanuvivvanu Baava
+
+Nenattaantittaanti Aadadaanni Kaadhu Baavo
+Pulsar Bike Midha RaaRaa Baava
+Nenattaantittaanti Aadadaanni Kaadhu Baavo
+Pulsar Bike Meeda RaaRa Baava`},
+  {title:"🎵 Mirchi Mirchi",preview:"https://drive.google.com/file/d/1IT7Ks49JBDipGNPhXvIV71YsgvQmpBiZ/preview",lyrics:`Mirchi mirchi mirchi mirchi Mirchi lanti kurrade
+Mirchi mirchi mirchi mirchi
+Ey mira mira meesam thippi
+Missile alle dookade
+
+Aa mirchi mirchi mirchi mirchi Mirchi lanti kurrade
+Aa mira mira meesam thippi
+Missile alle dookade
+
+Aa nippuku malle nikaarsaina aakaram
+Aadu gettina chota adiripoddi gudaram
+Abba ippudikanna modalavthadi yavvaram
+Idi cheppudu chalu dummo dummo dummaaram
+
+Mirchi mirchi mirchi mirchi Mirchi lanti kurrade
+Mirchi mirchi mirchi mirchi
+Aa mirchi mirchi mirchi mirchi Mirchi lanti kurrade
+
+Aa ekkadekkada vellado bangaram
+Gundelu thatti mogisthadu alarm
+Ye dikkulu mutti puttisthado kallolam
+Enni lekkalu vesi evvaram maatram cheppagalam
+
+Mirchi mirchi mirchi
+Mirchi mirchi mirchi
+
+`},
+  {title:"🎵 Poonakaalu",preview:"https://drive.google.com/file/d/1aFu5PTVH4uvvU3goY2nN39pkHcwpHd82/preview",lyrics:`Yo! This is not a mass song
+
+This is mega mass song
+
+Arey alaai balaai malaai pulaai
+
+Dillu motham kholo
+
+Arey mamaa chicha chesey raccha
+
+Enjoyment yolo
+
+Mana boss ittaa vachadante
+
+Yesukuntu steppu
+
+Arey kachithamga yegiripoddi
+
+Intipaina kappu
+
+Ye lyric girik pakkana pet
+
+Beat geet lapet lapet
+
+Don’t stop dancing
+
+Poonakalu loading
+
+Don’t stop dancing
+
+Poonakalu loading
+
+Ye chatak patak latak batak
+
+Mastugundhi zone’u
+
+Yey! Giraa giraa lepi kottu
+
+Mogipoddi town’u
+
+Yey! Salam kottu jilam kottu
+
+Manadhera place’u
+
+Ye! Teen’u-maar’u eela kotti
+
+Penchu jara dose’u
+
+Ye lyric girik pakkana pet
+
+Beat geet lapet lapet
+
+Ye don’t stop dancing
+
+Poonakalu loading
+
+Don’t stop dancing
+
+Poonakalu loading’u
+
+Yey don’t stop dancing
+
+Poonakaalu loading
+
+Ye raja aaja, ye raja
+
+Aaja aaja aaja aaja
+
+(one more time please)
+
+Aaja raja maja chedham
+
+Kiraak undhi tune
+
+Aadaa eedaa yedaa vinna
+
+Idhe ring-tone’u
+
+Ye gippi gippi gappa gappaa
+
+Rock and roll-u
+
+Ee paata thone petta mottam
+
+Under control’u
+
+Ye liric girik pakkana pet
+
+Beat geet lapet lapet
+
+Ye don’t stop dancing
+
+Poonakalu loading…
+
+Ye don’t stop dancing
+
+Poonakalu loading…
+
+Ye don’t stop dancing
+
+Poonakalu loading…
+
+( Poonakalu loading…)`},
+  {title:"🎵 Ratthaalu Ratthaalu",preview:"https://drive.google.com/file/d/1Vy5_Z8aS-p_F89P2i-AAxFiLUuYK-dwf/preview",lyrics:`Hoi, Ratthaalu Ratthaalu Ososi Ratthaalu
+Ninu Choosthe Nilabadanantaai Naa Chokka Botthaalu
+Ratthaalu Ratthaalu Ososi Ratthaalu
+Ninu Choosthe Ekkesthundhe Manase Rail Pattaalu
+
+Nee Ompu Sompu Andam Chandham Annee Naa Chuttaalu
+Chengumantu Raave Thiragaraseddhaam Chattaalu
+Nerchukunte Nerputhaale… Kottha Kottha Chitkaalu
+Mass Dance Cheseddhaam… Raave Raave Ratthaalu
+Naa Romance Choosthaava… Adhi Poolu Nimpina Pistol-u
+
+Ratthaalu Ratthaalu Ososi Ratthaalu
+Ninu Choosthe Nilabadanantaai Naa Chokka Botthaalu
+Ratthaalu Ratthaalu Ososi Ratthaalu
+Ninu Choosthe Ekkesthundhe Manase Rail Pattaalu
+
+Boss is Back Get Ready
+Nee Navvule Rathnaalu… Nee Maatale Muthyaalu
+Potlaalu Kadithe Kotla Koddhi Beraalu
+Nee Chethule Magnet-lu… Nee Vellu Veena Metlu
+Nuvu Thaakuthunte Rakthamanthaa Raagaalu
+
+Nuvu Pakkanunte Kickke Veru… Vaddhule Jaradhaalu
+Aavuraavurantu Unnaa… Theerchu Naa Saradhaalu
+Andhukegaa Vachhesaa… Raffaadiddhaam Raathri Pagalu
+Mass Dance Cheseddhaam… Raave Raave Ratthaalu
+O, Naa Romance Choosthaava… Adhi Poolu Nimpina Pistol-u
+
+Ratthaalu Ratthaalu Ososi Ratthaalu
+Ninu Choosthe Ghal GhalMantaai
+Naa Chitti Patteelu
+Ratthaalu Ratthaalu Ososi Ratthaalu
+Ninu Choosthe Nilabadanantaai
+Naa Jallo Ye Poolu
+
+Boss-u Choopiyy Nee Grace-u
+Hey My Dear Boss… Nuvu Mass Plus Class
+Nee Style Choosthe… Simhamaina Neetho Dhigadha Selfie-lu
+Hey, Miss Universe Laanti Nee Features-u
+Choosthu Unte Rechchipothaai Gundelona Gurraalu
+
+Nee Walk Choosthe Orayyo… I Loose My Control-u
+Nee Heat Unte Chaalammo… Ika Endhuku Petrol-u
+Naaku Nuvvu Neeku Nenu… Appachebudhaam Paatalu
+Mass Dance Cheseddhaam… Raave Raave Ratthaalu
+O, Naa Romance Choosthaavaa… Adhi Poolu Nimpina Pistol-u
+
+Heyy, Ratthaalu Ratthaalu Ososi Ratthaalu
+Ninu Choosthe Nilabadanantaai Naa Chokka Botthaalu
+Ratthaalu Ratthaalu Ososi Ratthaalu
+Ninu Choosthe Ekkesthundhe Manase Rail Pattaalu
+Ratthaaloo… Ratthaalu
+The Boss Is Back Back Get Ready`},
+  {title:"🎵 Top Lesi Poddi",preview:"https://drive.google.com/file/d/1GsWa06RoBoBJLhKm67rOvMPZ5IdeeU8I/preview",lyrics:`Ammayi manasu lo, abbai duresi
+Kitha kithale pettesthe emaitadi
+Manchi beat ostadi, picha paatostadi hoy, hoy
+Abbai manasune, ammai lagesi
+Thalagadala nokkeste emaitadi
+Mastu mass ostadi, best upostadi hoy, hoy, hoy…
+
+Raye raye na rakasi, nuvve paitesi, atta dopeste
+(Top lesipodde podde po po) * 2
+Raro raro na sivakasi, aggi rajesi, siggu pelcheste
+(Top lesipodde podde po po) * 2
+Chettu meeda mango la, nuvventha sakkagunnave
+Hey chaku lanti pillade, entha sharpgunnade
+Chakocchi mango kosthe…
+
+Top lesipodde, kanne kottav ante
+Top lesipodde, mudde pettav ante
+Top lesipoddi, cheyye pattav ante
+Top top top lechipoddi ro…
+
+Ammayi manasu lo, abbai duresi
+Kitha kithale pettesthe emaitadi
+Manchi beat ostadi, picha paatostadi…
+
+Aa summer lona lassi la, winter lona coffee la
+Uristunnave, patti lagesthunnave pilla, ponge ponge puri la
+Rrramu bheemu thammulla, jackie chan alludla
+Muddostunnave, vachi guddestunnave
+Ammo breakulleni lorry la…
+
+Raye raye na rakasi, atta navvesi, gunde thavveste
+Raro raro nuv chitikesi, shirt madathesi, collar egareste
+Top lesipodde, oni kattavante
+Top lesipodde, poole pettavante
+Top lesipoddi, eele kottavante
+Top top top lesipoddi ro…
+
+Ko ko kothikemo kobbarla, pilladiki burger la
+Nachestunnave kallokochestunnave arey kotha film trailer la
+Police ki roudy la, aadollaki chaadi la
+Book aipoyave, naaku set aipoyave, sodabuddi loni goli la…
+
+Raye raye na rakasi, gollu korikesi, ollu viricheste
+Raro raro nuv itukesi, pant marchesi, lungi katteste
+Top lesipodde, katukettavante
+Top lesipodde, gajulesavante
+Top lesipoddi, gode dookavante
+Top lesipoddi, door aa kottavante
+Top lesipodde top lesipodde
+Top top top top lesipodde.  ♥  😉`},
+  {title:"🎵 Diyyalo Diyyala",preview:"https://drive.google.com/file/d/1RsRYavka9tiE-AtEN27Mrn3O2SnL8nPU/preview",lyrics:`Aa… Muddula Muvva Rao Gaari Peddhammaayi
+Paddenimidhava Eta Paitesukundhata…
+Diyyaalo Diyyaala…
+Chinna Veedhi Sakkela Chittemmagaari Chinna Kodalu
+Nalabaiva Eta Neellosukundhata… Diyyaalo Diyyaala
+Rangula Raajarao Gaari Moodo Ammaayi… Pakkinti Pulla Rao Gaari Abbaayitho
+Jempu Zilaani Antaa… Diyyaalo Diyyaala
+
+Inka..! Mana Merikinti Mangathaayaru, Gaajula Sittemma
+Dubai Sathyavathi, Aallaalla Mogulni Vadhileshaarantaaa…
+Diyyaalo Diyyaala…
+Aalla Kathalu Maathtam Nenu Seppalenu Kaani
+Aalla Notitho Aalle Seppukuntaarantaa… Diyyaalo Diyyaala…
+Modhalettave Mangathayaru..!!
+
+Addharoopaayi Ichhaadu… Addham Konukkomannaadu
+Diyyaalo Diyyaala… Diyya Diyya Diyyaala
+Okkaroopaayichhaadu Sticker Konukkomannaadu…
+Diyyaalo Diyyaala… Diyya Diyya Diyyaala
+Rendu Roopaayalichhaadu Ribbon Konukkomannaadu
+Diyyaalo Diyyaala…
+Moodu Roopaayalichhaadu Mukkera Konukkomannaadu
+Diyyaalo Diyyaala…
+
+Padhi Roopaayalichhi Ponds Powder Konukkomannaadu
+Nalabhai Roopaayalichhi Nakili Necklace Konukkomannaadu
+Annee Konicchi Alankarinchi… Idhu Lakshalaku Berampetti
+Asaleni Pasaleni… Musalodiki Nannammesaado
+
+Pillaa Nee Baavinisthavaa… Tholukelli Thellaari Theesukosthanu
+Elo Diyyaalo…
+Pillaa Nee Baavinisthavaa… Edi Kaastha Challaarabettukosthanu
+Elo Diyyaalo…
+
+Ammo Naa Baavanisthanaa… Junior Sharukh Ni Jaaranisthanaa
+Ammo Naa Baavanisthanaa… Inko Kajol Ni Chaavanisthanaa…
+
+Menakinti Mangathaayaaru Mee Munduku Mila Mila Merisipoyindi
+Gaajula Sittemma Mee Mundhuku Gala Gala Vachhesthundhoi
+
+Gajjela Sappudu Vinnaadaa… Ekkadikellaavantaadu
+Diyyaalo Diyyaala… Diyya Diyya Diyyaala
+Gaajula Oopudu Vinnaadaa… Evadiki Saigalu Antaadu
+Diyyaalo Diyyaala… Diyya Diyya Diyyaala
+Pakkintodiki Polamaarindhaa… Nuvve Thalisaavantaadu
+Diyyaalo Diyyaala…
+Porigintodiki Jwaram Vachhindhaa… Neepai Dhigulani Antaadu
+Diyyaalo Diyyaala…
+
+Dhoma Kuttindhannaanaa… Aadaa Magaa Antaadu
+Poni..! Seema Kuttindhannaana… Chinnaa Peddaa Antaadu…
+Vaadiki Veediki Linkulu Petti… Unnavi Lenivi Ranukulu Katti
+Sheelaaniki Sankellese Chilake Kottani Jaamapandayyaanu
+Ayyoo Paapam..!!
+
+Pillaa Nee Baavinisthavaa… Okkasaari Saatukelli Late-Gosthaanu
+Elo Diyyaalo…
+Pillaa Nee Baavinisthavaa… Mogudikunna Doubt-Lanni Right Chesthanu
+Elo Diyyaalo…
+
+Ammo Naa Baavanisthanaa… Antha Goppa Lakku Neeku Dhakkanisthanaa
+Ammo Naa Baavanisthanaa… Vaadikunna  Thikka Neeku Ekkanisthanaa
+
+Arre..! Jaragandi Jaragandi Jaragandi… Jara Dhoosukuntoo
+Vachhetthaandhi Dubai Sathyavathe..!!!
+
+Dhuddu Kaavaalannaado… Dubai Nannu Pampaado
+Diyyaalo Diyyaala… Diyya Diyya Diyyaala
+Fridge TV Kontaane… Paisal Pampiyyamannaadu
+Diyyaalo Diyyaala… Diyya Diyya Diyyaala
+Sofa Set Kotaane… Sommulu Pampimannaadu
+Diyyaalo Diyyaala…
+Double Cot Kontaane… Dabbulu Pampiyyammannaadu
+Diyyaalo Diyyaala…
+
+Iyanni Pettaalante… Illu Kaavaalannaadu
+East Face-Lo Kontaane Inkaa Pampiymannaadu
+Solid-Gaa Settle-Ayyaamantoo… Boledu Aashatho Flight Dhigithe
+East Face Intilona… Double Cot Bed Paina
+Second Set Up Choosi Nenu Upset Ayyaanu…
+Thusssss….!!!
+
+Pillaa Nee Baavanisthaavaa… Upset Set Chesukoni Theesukosthaanu
+Elo Diyyaalo…
+Pilla Nee Baavanisthaavaa… Dubai Scent Buddilona Munchukosthaanu
+Elo Diyyaalo…
+
+Arre..! Ammo Naa Baavanisthanaa… Oil Baavilona Dhookanisthanaa
+Ammo Naa Baavanisthanaa… Veedi Chettu Neeku Antanisthanaa
+
+Orr Orr Orr Ori…!! Ee Mugguru Kathalaithe Naaku Thelusukaani
+Idhevaro Kotthabandiraa Baabu… Raimantoo Guddhukuntoo Vachhetthaandhi
+
+Ileanake Eershaputte Nadume Naadhani Annaadu
+Diyyaalo Diyyaala…
+Mumaith Khan Ki Dhamaak Thirige… Uduke Naadhani Annaadu
+Diyyaalo Diyyaala…
+Shreya Ke Sematalu Putte Soke Naadhani Annaadu
+Diyyaalo Diyyaala…
+Anushka Ne Enakki Nette Saruke Naadhani Annaadu
+Diyyaao Diyyaala…
+
+Front Back Chushaadu… Mentalekki Poyaadu
+Up Down Chushaadu… Appadam Aypoyaadu
+Face Choosi… Aa Face Soosi
+Hey… Face Soosi Freeze Ayipoyi Partulu Mottham Loosaipoyi
+Paapaki Nenu Sariponantu Paaripoyaadu..!!
+
+Abbo..!! Antha Goppa Face-Aa… Jaramaakkooda Soopincharaadhe
+
+Pillaa Nee Baavanisthavaa… Kanti Sooputhone Sapparisthaanu
+Elo Diyyaalo…
+Hey… Pillaa Nee Baavanisthavaa… Notimaatathone Nanjukuntaanu
+Elo Diyyaalo…
+
+Ok..! Naa Baavanisthanu… Junior Sharukh Ni Janta Chesthanu
+Neeke Naa Baavanisthanu… Intha Andhagatthe Gaadu Ledhantanu
+
+Pillaa Nee Baavanivvanu… Nammukunna Thoduneppudu Veedanivvavu
+Elo Diyyaalo…
+Pillaa Nee Baavanivvavu… Jeevithaanni Modulaaga Maaranivvaku
+Elo Diyyaalo…`},
+  {title:"🎵 Seeti Maar",preview:"https://drive.google.com/file/d/1lnMBa12V5_O0-bt-NpZu-qV31DKtV1VY/preview",lyrics:`Let’s Go…
+Merise Merupaa… Sogase Arupaa…
+Dhe Dhe Dhe…
+Katthulunna Nee Kannul Dhe Dhe…
+Dhe Dhe Dhe…
+Matthugunna Nee Muddhul Dhe Dhe…
+Dhe Dhe Dhe…
+Gap Ye Ivvaddhe…
+Seeti Maar Seeti Maar… Seeti Maar Seeti Maar… Seeti Maar…
+
+NTR ANR Mega Star… Ninne Choosthe Whistle Esthaar…
+Seeti Maar Seeti Maar… Seeti Maar Seeti Maar… Seeti Maar…
+NTR ANR Mega Star… Ninne Choosthe Whistle Esthaar…
+
+Hey Michael Jackson Mic Laa… Naa Mind Aripinchaavule…
+Tyson Visire Punch Laa… Naa Manase Pelchaave…
+
+Spider Alle Net Laa… Naa Vayasuni Chuttesaavule…
+Under World Don Laa… Nuvu Nannu Dhochesaave…
+
+Hey Dhe Dhe Dhe…
+Dimple Unna Nee Champal Dhe Dhe…
+Dhe Dhe Dhe…
+Sompulunna Aa Vompul Dhe Dhe…
+Dhe Dhe Dhe…
+Mosthu Thiragoddhe…
+Seeti Maar Seeti Maar… Seeti Maar Seeti Maar… Seeti Maar…
+
+NTR ANR Mega Star… Ninne Choosthe Whistle Esthaar…
+
+Twitter Loni Tweet Laa… Naa Temper Touch Chesaavule…
+Teaser Loni Twist Laa… Excitement Penchaave…
+
+Master Blaster Bat Laa… Dil Sixer Kottesaavule…
+Metrix Lo High-Speed Laa… Magic Ye Chesaave…
+
+Hey Dhe Dhe Dhe…
+Kalala Gallery Kallaku Dhe Dhe…
+Dhe Dhe Dhe…
+Colorful Gaa Selfie Dhe Dhe…
+Dhe Dhe Dhe…
+A To Z Dhe Dhe…
+
+NTR ANR Mega Star… Ninne Choosthe Whistle Esthaar…
+Seeti Maar Seeti Maar… Seeti Maar Seeti Maar… Seeti Maar…
+NTR ANR Mega Star… Ninne Choosthe Whistle Esthaar…`},
+  {title:"🎵 Jwala Reddy",preview:"https://drive.google.com/file/d/1l2rJkNEHvzxQ6qU9a4gIlI2ZvgLvYbDS/preview",lyrics:`Oye jwala reddy jwala reddy
+
+Ohy jwala reddy jwala reddy
+
+Telangana biddaro karabundhi ladduro
+
+Karabundhi ladduro aadinche kabaddiro
+
+Jwala reddy jwala reddy jwala reddy
+
+Oyammo jwala reddy jwala reddy haa…
+
+Jwala reddy jwala reddy
+
+Telangana biddaro kaara bundhi ladduro
+
+Karabundhi ladduro aadinche kabaddiro
+
+Bala reddy bala reddy andhra team headduro
+
+Kona seema blooduro
+
+Kona seema blooduro poradu A to Z ro
+
+Bala reddy bala reddy bala reddy
+
+Orayyo bala reddy bala reddy
+
+Bala reddy bala reddy andhra team headduro
+
+Kona seema blooduro
+
+Kona seema blooduro poradu A to Z ro
+
+Gorintaku metthaga nuri
+
+Goru muddhalu mingava?
+
+Antha erraga puttave andhari kadupunuu kottave
+
+Inupa gundlu minapa gundlu
+
+Atlu posukoni thinnava? Hatta katta unnavro
+
+Attha etla kannadhiro
+
+Jwala reddy jwala reddy
+
+Pori chusthe katthiro figure’u agarubatthiroo
+
+Figure-u agararubatthiro idhi asalu meedha mitthi ro
+
+Bala reddy bala reddy
+
+Esinadu dasthiro gundelona daasthiro
+
+Gundelona daasthiro veedu naaku aasthiro
+
+Ye mama yeskora bitu…
+
+Muddhu pettukunte sound mudu oorlu mogale
+
+Vaatesukunte chaale ooru vaada saavale
+
+Nadume unnadhi nadimitla irikindhayyo pidikitla
+
+Em chesthavo seekatla ijjath thiyaku vaakitla
+
+Jwala reddy jwala reddy…
+
+Jeelakarra bellame nuvvu naaku pendlame
+
+Nuvvu naaku pendlame pulu pandla palleme
+
+Bala reddy baala reddy
+
+Chaapa techukuntaro nee chathi meeda pantaro
+
+Chaathi meeda pantaro chaana mandhini kantaro`},
+  {title:"🎵 Ma Ma Mahesha",preview:"https://drive.google.com/file/d/18_k085NEwv6nWCfkXjGFneEI1GZ5Npwz/preview",lyrics:`Aey Sannajaji Moora Testha Somavaram
+Oyy Mallepoola Moora Testha Mangalaaram
+Are Banthi Poola Moora Testha  Budhavaram
+Are Gutthi Poola Moora Testha Guruvaram
+
+Hey Babu Sukka Malli Moora Sukkaravarame
+Oh Babu Tera Sampangi Moora Shanivarame
+Aey Aadivaram Ollokochhi Aarumooral
+Jallo Petti Aadesukomandi Andame
+
+Aey Ma Ma Ma Ma Ma Ma
+Ma Ma Ma Ma Mahesha
+Ne Musthabayyi Ittaa Vacheshaa
+
+Ma Ma Ma Ma Ma Ma
+Ma Ma Ma Ma Mahesha
+Ne Musthabayyi Ittaa Vacheshaa
+
+Aey Sannajaaji Moora Testha Somavaram (Somavaram)
+Oyy Mallepoola Moora Testha Magalaram (Magalaram)
+Are Bantipoola Moora Testha Budhavaram (Budhavaram)
+Are Gutthipoola Moora Testha Guruvaram
+
+(Poraa Barampuram Bajaaruke
+Theraa Gulaabi Moora
+Poraa Siripuram Sivaaruke
+Teraa Chengalva Moora)
+
+Aey Ma Ma Ma Ma Ma Ma
+Ma Ma Ma Ma Mahesha
+Ne Musthabayyi Ittaa Vacheshaa
+
+Ma Ma Ma Ma Ma Ma
+Ma Ma Ma Ma Mahesha
+Ne Musthabayyi Ittaa Vacheshaa
+
+Pilladaa Nuv Visireykoi Sirunavvalaa
+picnic Ku Pothaanoi Lolopalaa
+Magada Nanu Chudathaavem Chaligaalilaa
+Matthekki Pothaandhoi Naluvaipulaa
+
+Gallaa Pette Nee Muddhultho Nindaalne
+Prathiroju Muppootalaa
+Gallaa Patti Naa Premantha Gunjey ve
+Siggete Edho Moola
+
+Hey Siggethappa Yeggottidi Ledhoi Pokiri
+Are Mogge Thappa ThaggeLaaga Ledhee Thimmiri
+Ey Saggubiyyam Semiyaalo Thagga Paalu Chekkeresi
+Paala Glaasu Pattaraa Mari
+
+Aey Ma Ma Ma Ma Ma Ma
+Ma Ma Ma Ma Mahesha
+Ne Musthabayyi Ittaa Vacheshaa
+
+Ma Ma Ma Ma Ma Ma
+Ma Ma Ma Ma Mahesha
+Ne Musthabayyi Ittaa Vacheshaa`},
+  {title:"🎵Naatu Naatu",preview:"https://drive.google.com/file/d/1dGDrs8a_xHcI0pjOZ-X36vOWATo_C6E3/preview",lyrics:`Polam Gattu Dhummulona
+
+Potlagittha Dhookinattu
+
+Poleramma Jaatharalo
+
+Potharaju Ooginattu
+
+ 
+
+Kirru Seppulesukoni
+
+Karrasaamu Sesinattu
+
+Marrisettu Needalona
+
+Kurragumpu Koodinattu
+
+Errajonna Rottelona
+
+Mirapa Thokku Kalipinattu
+
+ 
+
+Naa Paata Soodu, Naa Paata Soodo,
+
+Naa Paata Soodu…
+
+ 
+
+Naatu Naatu Naatu Naatu
+
+Naatu Naatu Veera Naatu
+
+Naatu Naatu Naatu Naatu
+
+Naatu Naatu Oora Naatu
+
+Naatu Naatu Naatu Pachhi
+
+ 
+
+Mirapa Laaga Pichha Naatu
+
+Naatu Naatu Naatu
+
+Vichhu Katthilaaga Verri Naatu
+
+ 
+
+Gundeladhiripoyelaa
+
+Dandanakara Moginattu
+
+Sevulu Sillu Padelaaga
+
+Keesupitta Koosinattu
+
+Yelu Sitikaleselaa
+
+Yavvaaram Saaginattu
+
+ 
+
+Kaalu Sindu Thokkelaa
+
+Dhummaaram Reginattu
+
+Ollu Semata Pattelaa
+
+Veerangam Sensinattu
+
+ 
+
+Naa Paata Soodu, Naa Paata Soodo,
+
+Naa Paata Soodu…
+
+ 
+
+Naatu Naatu Naatu Naatu
+
+Naatu Naatu Veera Naatu
+
+Naatu Naatu Naatu Naatu
+
+Naatu Naatu Oora Naatu
+
+ 
+
+Naatu Naatu Naatu
+
+Gaddapaara Laaga Chedda Naatu
+
+Naatu Naatu Naatu
+
+Ukkapothalaaga  Thikka Naatu
+
+ 
+
+Bhoomi Dhaddarillelaa
+
+Ontiloni Ragathamanthaa
+
+Rankelesi Egirelaa EseyRo Ekaa Eki
+
+Naatu Naatu Naato, Vaah Esko
+
+ 
+
+Are Dhummu Dhummu Dhulipelaa
+
+Lopalunna Paanamantha
+
+Dumuku Dumukulaade
+
+Dhookeyy Raa Saraasari
+
+Naatu Naatu Naato
+
+ `}
+];
+
+const songList=document.getElementById("songList");
+const playerWrap=document.getElementById("playerWrap");
+const lyricsHolder=document.getElementById("lyricsHolder");
+const lyricsTitle=document.getElementById("lyricsTitle");
+
+songs.forEach((s,i)=>{
+  const li=document.createElement("li");
+  li.textContent=s.title;
+  li.className="song-item";
+  li.dataset.index=i;
+  li.onclick=()=>selectSong(i);
+  songList.appendChild(li);
+
+  const block=document.createElement("div");
+  block.className="lyrics-block";
+  block.id=`lyrics-${i}`;
+  block.textContent=s.lyrics;
+  lyricsHolder.appendChild(block);
+});
+
+let currentIndex=0;
+function setIframe(src){
+  playerWrap.innerHTML="";
+  const iframe=document.createElement("iframe");
+  iframe.src=src+"?autoplay=1&mute=1";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+}
+
+function selectSong(i){
+  document.querySelectorAll(".song-item").forEach(el=>el.classList.remove("active"));
+  document.querySelector(`.song-item[data-index="${i}"]`).classList.add("active");
+  const s=songs[i];
+  playerWrap.style.opacity=0;
+  setTimeout(()=>{
+    setIframe(s.preview);
+    playerWrap.style.opacity=1;
+  },400);
+  currentIndex=i;
+  document.querySelectorAll(".lyrics-block").forEach(b=>b.classList.remove("active"));
+  document.getElementById(`lyrics-${i}`).classList.add("active");
+  lyricsTitle.textContent=s.title;
+}
+
+document.getElementById("centerPlayer").onclick=()=>{
+  currentIndex=(currentIndex+1)%songs.length;
+  selectSong(currentIndex);
+};
+
+function goBack(){
+  window.location.href="bored back.html";
+}
+function openPlaylist(){
+  window.location.href="all back.html";
+}
+selectSong(0);
+</script>
+</body>
+</html>
