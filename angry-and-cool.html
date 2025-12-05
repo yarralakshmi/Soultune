@@ -163,6 +163,12 @@ body{
   cursor:pointer;
   transition:opacity 0.4s ease;
 }
+.center-player iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
 
 /* Lyrics panel */
 .lyrics-panel{
@@ -219,6 +225,7 @@ body{
 <h1 class="heading"> 🎶Cool Down🧘</h1>
 
 <div class="container">
+  <!-- Left Sidebar -->
   <aside class="left-nav">
     <h2>🧘 Playlist (10)</h2>
     <ul class="song-list" id="songList"></ul>
@@ -228,10 +235,12 @@ body{
     </div>
   </aside>
 
+  <!-- Center Video Player -->
   <main class="center-player" id="centerPlayer">
     <div class="iframe-wrap" id="playerWrap"></div>
   </main>
 
+  <!-- Lyrics Sidebar -->
   <aside class="lyrics-panel" id="lyricsPanel">
     <h3 id="lyricsTitle">Lyrics</h3>
     <div id="lyricsHolder"></div>
@@ -239,7 +248,7 @@ body{
 </div>
 
 <script>
-// Bubbles
+// Background bubbles
 const bubblesContainer=document.getElementById('bubbles');
 for(let i=0;i<25;i++){
   const b=document.createElement('div');
@@ -252,7 +261,7 @@ for(let i=0;i<25;i++){
   bubblesContainer.appendChild(b);
 }
 
-// SONG DATA
+// SONG DATA (10 songs)
 const songs=[
   {title:"🎶 Undipove Naathone",preview:"https://drive.google.com/file/d/1xRWGneeMx6wPJ-d4nVycg-3TtSKiaYyA/preview",lyrics:`Chukkalaku Chuttanivaa
 Mabbulaku Sandraanivaa
@@ -817,29 +826,13 @@ o sona vennelasona nenitta nuvvayyana
 o sona vennelasona
 nee vaale kannullona`}
 ];
+
 const songList=document.getElementById('songList');
 const playerWrap=document.getElementById('playerWrap');
 const lyricsHolder=document.getElementById('lyricsHolder');
+const lyricsTitle=document.getElementById('lyricsTitle');
+const centerPlayer=document.getElementById('centerPlayer');
 
-// Convert Google Drive preview → direct MP4 link
-function convertToMP4(url) {
-  const id = url.split("/d/")[1].split("/")[0];
-  return `https://drive.google.com/uc?export=download&id=${id}`;
-}
-
-// Replace iframe with fast-loading <video>
-function setVideo(src) {
-  const mp4 = convertToMP4(src);
-  playerWrap.innerHTML = `
-    <video autoplay controls playsinline
-      style="width:100%;height:100%;object-fit:cover;border:0;">
-      <source src="${mp4}" type="video/mp4">
-    </video>
-  `;
-  simulateVideoEnd(currentIndex);
-}
-
-// Build song list + lyrics
 songs.forEach((s,i)=>{
   const li=document.createElement('li');
   li.textContent=s.title;
@@ -856,8 +849,16 @@ songs.forEach((s,i)=>{
 });
 
 let currentIndex=0;
-const songDurations=[200,230,210,220,210,200,190,210,200,220];
+function setIframe(src){
+  playerWrap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.src=src+"?autoplay=1&mute=0";
+  iframe.allow="autoplay; encrypted-media; fullscreen";
+  playerWrap.appendChild(iframe);
+  simulateVideoEnd(currentIndex);
+}
 
+const songDurations=[200,230,210,220,210,200,190,210,200,220];
 function simulateVideoEnd(index=currentIndex){
   clearTimeout(window.endTimeout);
   const dur = songDurations[index] || 210;
@@ -867,17 +868,13 @@ function simulateVideoEnd(index=currentIndex){
 function selectSong(index){
   document.querySelectorAll('.song-item').forEach(li=>li.classList.remove('active'));
   document.querySelector(`.song-item[data-index="${index}"]`).classList.add('active');
-
   const s=songs[index];
   playerWrap.style.opacity=0;
-
   setTimeout(()=>{
-    setVideo(s.preview);
+    setIframe(s.preview);
     playerWrap.style.opacity=1;
   },400);
-
   currentIndex=index;
-
   document.querySelectorAll('.lyrics-block').forEach(b=>b.classList.remove('active'));
   document.getElementById(`lyrics-${index}`).classList.add('active');
   lyricsTitle.textContent=s.title;
@@ -888,12 +885,17 @@ function nextSong(){
   selectSong(currentIndex);
 }
 
-document.getElementById("centerPlayer").onclick=()=>nextSong();
+centerPlayer.onclick=()=>nextSong();
 
-function goBack(){ window.location.href="angry%20back.html"; }
-function openPlaylist(){ window.location.href="all%20back.html"; }
+function goBack(){
+  window.location.href="angry%20back.html";
+}
+function openPlaylist(){
+  window.location.href="all%20back.html";
+}
 
 selectSong(0);
 </script>
 </body>
 </html>
+
